@@ -1,33 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel</title>
+<title>Admin Dashboard</title>
+
+<style>
+*{box-sizing:border-box;font-family:Segoe UI,Arial}
+body{
+  margin:0;
+  min-height:100vh;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+}
+
+/* HEADER */
+header{
+  padding:18px 30px;
+  color:#fff;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+header h2{
+  margin:0;
+  font-weight:600;
+  letter-spacing:1px;
+}
+header button{
+  background:#ef4444;
+  border:none;
+  padding:10px 18px;
+  color:#fff;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+/* CONTENT */
+.container{
+  padding:20px 30px 40px;
+}
+
+.card{
+  background:#ffffff;
+  border-radius:16px;
+  padding:22px;
+  box-shadow:0 20px 40px rgba(0,0,0,.2)
+}
+
+.card h3{
+  margin-top:0;
+  color:#333;
+  letter-spacing:1px;
+}
+
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:15px;
+}
+th,td{
+  padding:12px;
+  text-align:center;
+  border-bottom:1px solid #e5e7eb;
+  font-size:14px;
+}
+th{
+  background:#f3f4f6;
+  color:#555;
+  font-weight:700;
+}
+tr:hover{
+  background:#f9fafb;
+}
+
+/* SMALL */
+.small{
+  font-size:12px;
+  color:#777;
+}
+</style>
 </head>
 <body>
 
-<h2>DATA SAMPLE</h2>
-<table border="1" cellpadding="8">
-<thead>
-<tr>
-<th>Date</th>
-<th>Requester</th>
-<th>Sample</th>
-<th>Code</th>
-</tr>
-</thead>
-<tbody id="data"></tbody>
-</table>
+<header>
+  <h2>ADMIN DASHBOARD</h2>
+  <button onclick="logout()">Logout</button>
+</header>
+
+<div class="container">
+  <div class="card">
+    <h3>Data Sample Request</h3>
+    <div class="small">Semua data yang diinput oleh user</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Requester</th>
+          <th>No of Sample</th>
+          <th>Sample Name</th>
+          <th>Queue</th>
+          <th>Sample Code</th>
+          <th>User ID</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { 
+  getFirestore, collection, getDocs, orderBy, query 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
+ apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
   authDomain: "analysis-request-sample.firebaseapp.com",
   projectId: "analysis-request-sample",
   storageBucket: "analysis-request-sample.firebasestorage.app",
@@ -38,22 +128,43 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
 
-onAuthStateChanged(auth, async user=>{
-  if(!user){ location.href="admin-login.html"; return; }
+// 🔐 PROTEKSI ADMIN
+if(sessionStorage.getItem("role")!=="admin"){
+  location.href="index.html";
+}
 
-  const snap = await getDocs(collection(db,"samples"));
-  snap.forEach(d=>{
-    data.innerHTML += `
-      <tr>
-        <td>${d.data().date}</td>
-        <td>${d.data().requester}</td>
-        <td>${d.data().sampleName}</td>
-        <td>${d.data().sampleCode}</td>
-      </tr>`;
-  });
+// LOAD DATA
+const tableBody = document.getElementById("tableBody");
+
+const q = query(
+  collection(db,"samples"),
+  orderBy("createdAt","desc")
+);
+
+const snap = await getDocs(q);
+snap.forEach(doc=>{
+  const d = doc.data();
+  const tr = document.createElement("tr");
+  tr.innerHTML=`
+    <td>${d.date}</td>
+    <td>${d.requester}</td>
+    <td>${d.noSample}</td>
+    <td>${d.sampleName}</td>
+    <td>${d.sampleQueue}</td>
+    <td><strong>${d.sampleCode}</strong></td>
+    <td>${d.userId || "-"}</td>
+  `;
+  tableBody.appendChild(tr);
 });
 </script>
+
+<script>
+function logout(){
+  sessionStorage.clear();
+  location.href="index.html";
+}
+</script>
+
 </body>
 </html>
