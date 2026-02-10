@@ -6,40 +6,30 @@
 
 <style>
 *{box-sizing:border-box;font-family:Segoe UI,Arial}
-body{
-  background:#f3f4f6;
-  padding:30px;
-}
+body{background:#f3f4f6;padding:30px}
 .card{
-  max-width:520px;
-  background:#fff;
-  padding:25px;
-  border-radius:14px;
-  margin:auto;
-  box-shadow:0 10px 30px rgba(0,0,0,.12);
+  max-width:520px;background:#fff;padding:25px;
+  border-radius:14px;margin:auto;
+  box-shadow:0 10px 30px rgba(0,0,0,.12)
 }
 label{font-weight:600;margin-top:12px;display:block}
 input,button{
-  width:100%;
-  padding:10px;
-  margin-top:6px;
-  border-radius:8px;
-  border:1px solid #ccc;
+  width:100%;padding:10px;margin-top:6px;
+  border-radius:8px;border:1px solid #ccc
 }
 button{
   background:linear-gradient(135deg,#667eea,#764ba2);
-  border:none;
-  color:#fff;
-  font-size:15px;
-  font-weight:600;
-  margin-top:18px;
-  cursor:pointer;
+  border:none;color:#fff;font-size:15px;
+  font-weight:600;margin-top:18px;cursor:pointer
 }
 #preview{
-  margin-top:10px;
-  font-size:18px;
-  color:#667eea;
-  font-weight:700;
+  margin-top:10px;font-size:18px;
+  color:#667eea;font-weight:700
+}
+#hint{
+  margin-top:6px;
+  font-size:13px;
+  color:#999;
 }
 </style>
 </head>
@@ -60,8 +50,9 @@ button{
 <label>Sample Name</label>
 <input type="text" id="sampleName">
 
-<label>Today's Sample</label>
-<input type="number" id="todaySample" readonly>
+<label>Sample's Queue</label>
+<input type="number" id="sampleQueue" placeholder="Auto / bisa diedit">
+<div id="hint">Queue otomatis akan diisi, tapi bisa kamu ubah</div>
 
 <div>
   <strong>Preview Sample Code:</strong>
@@ -95,10 +86,11 @@ if(!sessionStorage.getItem("userId")){
   location.href="user-login.html";
 }
 
-// auto set Today's Sample saat date dipilih
-date.addEventListener("change", autoSetTodaySample);
+// 🔹 AUTO ISI QUEUE SAAT DATE DIPILIH
+date.addEventListener("change", autoFillQueue);
+sampleQueue.addEventListener("input", updatePreview);
 
-async function autoSetTodaySample(){
+async function autoFillQueue(){
   if(!date.value) return;
 
   const q = query(
@@ -107,13 +99,13 @@ async function autoSetTodaySample(){
   );
 
   const snap = await getDocs(q);
-  todaySample.value = snap.size + 1;
+  sampleQueue.value = snap.size + 1; // default otomatis
   updatePreview();
 }
 
-// preview realtime
+// 🔹 PREVIEW SAMPLE CODE
 function updatePreview(){
-  if(!date.value || !todaySample.value){
+  if(!date.value || !sampleQueue.value){
     preview.innerText = "-";
     return;
   }
@@ -123,19 +115,20 @@ function updatePreview(){
   const monthLetter = String.fromCharCode(65 + d.getMonth());
   const dayFormatted = String(d.getDate()).padStart(2,"0");
 
-  preview.innerText = `${yearLetter}${monthLetter}${dayFormatted}-${todaySample.value}`;
+  preview.innerText =
+    `${yearLetter}${monthLetter}${dayFormatted}-${sampleQueue.value}`;
 }
 
-// simpan data
+// 🔹 SIMPAN DATA
 window.saveSample = async function(){
-  if(!date.value){
-    alert("Tanggal wajib diisi");
+  if(!date.value || !sampleQueue.value){
+    alert("Date dan Sample's Queue wajib diisi");
     return;
   }
 
   const sampleCode = preview.innerText;
 
-  // cek double code
+  // Cegah double code
   const checkQ = query(
     collection(db,"samples"),
     where("sampleCode","==",sampleCode)
@@ -151,7 +144,7 @@ window.saveSample = async function(){
     requester: requester.value || "-",
     noSample: noSample.value || "-",
     sampleName: sampleName.value || "-",
-    todaySample: todaySample.value,
+    sampleQueue: sampleQueue.value,
     sampleCode: sampleCode,
     userId: sessionStorage.getItem("userId"),
     createdAt: new Date()
@@ -160,6 +153,8 @@ window.saveSample = async function(){
   alert("Data tersimpan\nCode: " + sampleCode);
 
   sampleName.value = "";
+  sampleQueue.value = "";
+  preview.innerText = "-";
 }
 </script>
 
