@@ -45,9 +45,8 @@ button{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-  getAuth, signInWithEmailAndPassword 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
@@ -69,15 +68,13 @@ window.login = async function(){
       password.value
     );
 
-    sessionStorage.setItem("admin","true");
     location.href = "admin-dashboard.html";
-
-  }}catch(err){
-  console.error(err);
-  alert("Error code: " + err.code);
-}
+  }catch(err){
+    alert(err.code);
+  }
 }
 </script>
+
 
 </body>
 </html>
