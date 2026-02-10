@@ -40,7 +40,7 @@ button{
 <input type="email" id="email" placeholder="Admin Email">
 <input type="password" id="password" placeholder="Password">
 
-<button onclick="login()">Login</button>
+<button id="loginBtn">Login</button>
 </div>
 
 <script type="module">
@@ -60,21 +60,25 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-window.login = async function(){
+const loginBtn = document.getElementById("loginBtn");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+
+loginBtn.addEventListener("click", async () => {
   try{
     await signInWithEmailAndPassword(
       auth,
-      email.value,
-      password.value
+      emailInput.value,
+      passwordInput.value
     );
 
     location.href = "admin-dashboard.html";
   }catch(err){
     alert(err.code);
+    console.error(err);
   }
-}
+});
 </script>
-
 
 </body>
 </html>
