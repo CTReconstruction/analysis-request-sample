@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>User Login</title>
+</head>
+<body>
+
+<h2>Masukkan User ID</h2>
+<input id="uid" placeholder="Contoh: A9F3XQ">
+<button onclick="loginUser()">Masuk</button>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, getDoc } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "API_KEY_KAMU",
+  authDomain: "PROJECT_ID.firebaseapp.com",
+  projectId: "PROJECT_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.loginUser = async function(){
+  const ref = doc(db,"access_ids",uid.value);
+  const snap = await getDoc(ref);
+
+  if(snap.exists() && snap.data().active){
+    sessionStorage.setItem("userId",uid.value);
+    location.href="user.html";
+  }else{
+    alert("User ID tidak valid");
+  }
+}
+</script>
+</body>
+</html>
