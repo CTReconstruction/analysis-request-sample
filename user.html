@@ -1,24 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <title>Input Sample</title>
+
+<style>
+*{box-sizing:border-box;font-family:Segoe UI,Arial}
+body{
+  background:#f3f4f6;
+  padding:30px;
+}
+.card{
+  max-width:520px;
+  background:#fff;
+  padding:25px;
+  border-radius:14px;
+  margin:auto;
+  box-shadow:0 10px 30px rgba(0,0,0,.12);
+}
+label{font-weight:600;margin-top:12px;display:block}
+input,button{
+  width:100%;
+  padding:10px;
+  margin-top:6px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+button{
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  border:none;
+  color:#fff;
+  font-size:15px;
+  font-weight:600;
+  margin-top:18px;
+  cursor:pointer;
+}
+#preview{
+  margin-top:10px;
+  font-size:18px;
+  color:#667eea;
+  font-weight:700;
+}
+</style>
 </head>
 <body>
 
+<div class="card">
 <h2>Input Sample</h2>
 
-<input id="date" type="date"><br><br>
-<input id="requester" placeholder="Requester"><br><br>
-<input id="sampleName" placeholder="Sample Name"><br><br>
-<input id="todaySample" placeholder="Today's Sample"><br><br>
+<label>Date</label>
+<input type="date" id="date">
 
-<button onclick="save()">Simpan</button>
+<label>Requester</label>
+<input type="text" id="requester">
+
+<label>No of Sample</label>
+<input type="number" id="noSample">
+
+<label>Sample Name</label>
+<input type="text" id="sampleName">
+
+<label>Today's Sample</label>
+<input type="number" id="todaySample" readonly>
+
+<div>
+  <strong>Preview Sample Code:</strong>
+  <div id="preview">-</div>
+</div>
+
+<button onclick="saveSample()">Generate & Save</button>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { 
+  getFirestore, collection, addDoc,
+  query, where, getDocs
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
@@ -33,25 +91,77 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-window.save = async function(){
-  if(!sessionStorage.getItem("userId")){
-    location.href="user-login.html";
+if(!sessionStorage.getItem("userId")){
+  location.href="user-login.html";
+}
+
+// auto set Today's Sample saat date dipilih
+date.addEventListener("change", autoSetTodaySample);
+
+async function autoSetTodaySample(){
+  if(!date.value) return;
+
+  const q = query(
+    collection(db,"samples"),
+    where("date","==",date.value)
+  );
+
+  const snap = await getDocs(q);
+  todaySample.value = snap.size + 1;
+  updatePreview();
+}
+
+// preview realtime
+function updatePreview(){
+  if(!date.value || !todaySample.value){
+    preview.innerText = "-";
     return;
   }
 
   const d = new Date(date.value);
-  const code = `${d.getFullYear()}-${todaySample.value}`;
+  const yearLetter = String.fromCharCode(65 + (d.getFullYear() - 2021));
+  const monthLetter = String.fromCharCode(65 + d.getMonth());
+  const dayFormatted = String(d.getDate()).padStart(2,"0");
+
+  preview.innerText = `${yearLetter}${monthLetter}${dayFormatted}-${todaySample.value}`;
+}
+
+// simpan data
+window.saveSample = async function(){
+  if(!date.value){
+    alert("Tanggal wajib diisi");
+    return;
+  }
+
+  const sampleCode = preview.innerText;
+
+  // cek double code
+  const checkQ = query(
+    collection(db,"samples"),
+    where("sampleCode","==",sampleCode)
+  );
+  const exist = await getDocs(checkQ);
+  if(!exist.empty){
+    alert("Sample Code sudah ada");
+    return;
+  }
 
   await addDoc(collection(db,"samples"),{
-    date:date.value,
-    requester:requester.value,
-    sampleName:sampleName.value,
-    sampleCode:code,
-    userId:sessionStorage.getItem("userId")
+    date: date.value,
+    requester: requester.value || "-",
+    noSample: noSample.value || "-",
+    sampleName: sampleName.value || "-",
+    todaySample: todaySample.value,
+    sampleCode: sampleCode,
+    userId: sessionStorage.getItem("userId"),
+    createdAt: new Date()
   });
 
-  alert("Data tersimpan");
+  alert("Data tersimpan\nCode: " + sampleCode);
+
+  sampleName.value = "";
 }
 </script>
+
 </body>
 </html>
