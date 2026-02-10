@@ -72,9 +72,10 @@ window.login = async function(){
     sessionStorage.setItem("admin","true");
     location.href = "admin-dashboard.html";
 
-  }catch(err){
-    alert("Login gagal: " + err.message);
-  }
+  }}catch(err){
+  console.error(err);
+  alert("Error code: " + err.code);
+}
 }
 </script>
 
