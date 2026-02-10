@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Input Sample</title>
+</head>
+<body>
+
+<h2>Input Sample</h2>
+
+<input id="date" type="date"><br><br>
+<input id="requester" placeholder="Requester"><br><br>
+<input id="sampleName" placeholder="Sample Name"><br><br>
+<input id="todaySample" placeholder="Today's Sample"><br><br>
+
+<button onclick="save()">Simpan</button>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "API_KEY_KAMU",
+  authDomain: "PROJECT_ID.firebaseapp.com",
+  projectId: "PROJECT_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.save = async function(){
+  if(!sessionStorage.getItem("userId")){
+    location.href="user-login.html";
+    return;
+  }
+
+  const d = new Date(date.value);
+  const code = `${d.getFullYear()}-${todaySample.value}`;
+
+  await addDoc(collection(db,"samples"),{
+    date:date.value,
+    requester:requester.value,
+    sampleName:sampleName.value,
+    sampleCode:code,
+    userId:sessionStorage.getItem("userId")
+  });
+
+  alert("Data tersimpan");
+}
+</script>
+</body>
+</html>
