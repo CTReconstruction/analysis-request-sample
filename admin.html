@@ -79,43 +79,26 @@ th{
 </div>
 
 <script type="module">
-/* 🔒 PROTEKSI ADMIN */
-if(sessionStorage.getItem("adminLogin")!=="true"){
-  location.href="admin-login.html";
-}
-
-/* 🔥 FIREBASE */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
-apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
+  apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
   authDomain: "analysis-request-sample.firebaseapp.com",
   projectId: "analysis-request-sample",
   storageBucket: "analysis-request-sample.firebasestorage.app",
   messagingSenderId: "496722658784",
-  appId: "1:496722658784:web:fda4b31684fb41029dd785",
-  measurementId: "G-XGFM33EH18"
+  appId: "1:496722658784:web:fda4b31684fb41029dd785"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const auth = getAuth(app);
 
-/* 📥 LOAD DATA */
-const tbody = document.getElementById("data");
-const snap = await getDocs(collection(db,"samples"));
-
-snap.forEach(doc=>{
-  const d = doc.data();
-  const tr = document.createElement("tr");
-  tr.innerHTML = `
-    <td>${d.date}</td>
-    <td>${d.requester}</td>
-    <td>${d.sampleName}</td>
-    <td><strong>${d.sampleCode}</strong></td>
-  `;
-  tbody.appendChild(tr);
+onAuthStateChanged(auth, user=>{
+  if(!user){
+    location.href="admin-login.html";
+  }
 });
 </script>
 
