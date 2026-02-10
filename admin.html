@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
+</head>
+<body>
+
+<h2>DATA SAMPLE</h2>
+<table border="1" cellpadding="8">
+<thead>
+<tr>
+<th>Date</th>
+<th>Requester</th>
+<th>Sample</th>
+<th>Code</th>
+</tr>
+</thead>
+<tbody id="data"></tbody>
+</table>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, getDocs } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "API_KEY_KAMU",
+  authDomain: "PROJECT_ID.firebaseapp.com",
+  projectId: "PROJECT_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, async user=>{
+  if(!user){ location.href="admin-login.html"; return; }
+
+  const snap = await getDocs(collection(db,"samples"));
+  snap.forEach(d=>{
+    data.innerHTML += `
+      <tr>
+        <td>${d.data().date}</td>
+        <td>${d.data().requester}</td>
+        <td>${d.data().sampleName}</td>
+        <td>${d.data().sampleCode}</td>
+      </tr>`;
+  });
+});
+</script>
+</body>
+</html>
