@@ -1,1 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Analysis Request Sample</title>
+<style>
+    * { box-sizing: border-box; font-family: "Segoe UI", Arial, sans-serif; }
+    body {
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    .card {
+        background: #ffffff;
+        padding: 25px 30px;
+        width: 100%;
+        max-width: 950px;
+        border-radius: 14px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    h2 { text-align: center; margin-bottom: 20px; color: #333; letter-spacing: 1px; }
+    label { font-size: 14px; font-weight: 600; color: #555; display: block; margin-top: 12px; }
+    input { width: 100%; padding: 10px; margin-top: 6px; border-radius: 8px; border: 1px solid #ccc; outline: none; font-size: 14px; }
+    input:focus { border-color: #667eea; box-shadow: 0 0 0 2px rgba(102,126,234,0.2); }
+    button { width: 100%; margin-top: 20px; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 10px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    button:hover { opacity: 0.9; transform: translateY(-1px); }
+    table { width: 100%; margin-top: 30px; border-collapse: collapse; }
+    table th, table td { padding: 12px; text-align: center; border-bottom: 1px solid #ddd; font-size: 14px; }
+    table th { background: #f3f4f6; }
+    .remove-btn { background: #ef4444; border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+    .remove-btn:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h2>ANALYSIS REQUEST SAMPLE</h2>
+
+    <label>Date</label>
+    <input type="date" id="date">
+
+    <label>Requester</label>
+    <input type="text" id="requester">
+
+    <label>No of Sample</label>
+    <input type="number" id="noSample">
+
+    <label>Sample Name</label>
+    <input type="text" id="sampleName">
+
+    <label>Today's Sample</label>
+    <input type="number" id="todaySample">
+
+    <button onclick="generateCode()">Generate Sample Code</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Requester</th>
+                <th>No of Sample</th>
+                <th>Sample Name</th>
+                <th>Sample Code</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
+    authDomain: "analysis-request-sample.firebaseapp.com",
+    projectId: "analysis-request-sample",
+    storageBucket: "analysis-request-sample.appspot.com",
+    messagingSenderId: "496722658784",
+    appId: "1:496722658784:web:fda4b31684fb41029dd785"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.saveSample = async function(data) {
+    await addDoc(collection(db, "samples"), data);
+  };
+
+  window.loadSamples = async function() {
+    const querySnapshot = await getDocs(collection(db, "samples"));
+    querySnapshot.forEach((doc) => {
+      addRowFromDB(doc.data());
+    });
+  };
+</script>
+
+<script>
+function addRowFromDB(data) {
+    const tableBody = document.getElementById("tableBody");
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+        <td>${data.date}</td>
+        <td>${data.requester}</td>
+        <td>${data.noSample}</td>
+        <td>${data.sampleName}</td>
+        <td><strong>${data.sampleCode}</strong></td>
+        <td>-</td>
+    `;
+    tableBody.appendChild(row);
+}
+
+async function generateCode() {
+    const dateValue = document.getElementById("date").value;
+    const requester = document.getElementById("requester").value || "-";
+    const noSample = document.getElementById("noSample").value || "-";
+    const sampleName = document.getElementById("sampleName").value || "-";
+    const todaySample = document.getElementById("todaySample").value;
+
+    if (!dateValue || !todaySample) {
+        alert("Date dan Today's Sample wajib diisi!");
+        return;
+    }
+
+    const date = new Date(dateValue);
+    const yearLetter = String.fromCharCode(65 + (date.getFullYear() - 2021));
+    const monthLetter = String.fromCharCode(65 + date.getMonth());
+    const dayFormatted = String(date.getDate()).padStart(2, "0");
+
+    const sampleCode = `${yearLetter}${monthLetter}${dayFormatted}-${todaySample}`;
+
+    addRowFromDB({ date: dateValue, requester, noSample, sampleName, sampleCode });
+
+    await saveSample({ date: dateValue, requester, noSample, sampleName, sampleCode });
+
+    document.getElementById("todaySample").value = "";
+    document.getElementById("sampleName").value = "";
+}
+
+window.onload = function() {
+    loadSamples();
+};
+</script>
+
+</body>
+</html>
+
 
