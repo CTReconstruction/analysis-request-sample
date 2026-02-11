@@ -99,6 +99,12 @@ Preview Code: <span id="preview">-</span>
 <button onclick="saveSample()">Generate & Save</button>
 </div>
 
+<script>
+if(sessionStorage.getItem("userAccess") !== "true"){
+  location.href = "user-login.html";
+}
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { 
@@ -106,6 +112,7 @@ import {
   query, where, getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+  
 const firebaseConfig = {
   apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
   authDomain: "analysis-request-sample.firebaseapp.com",
