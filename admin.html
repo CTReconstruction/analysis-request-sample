@@ -3,96 +3,89 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel</title>
+<title>Admin Dashboard</title>
 
 <style>
 *{box-sizing:border-box;font-family:Segoe UI,Arial}
+
 body{
   margin:0;
   min-height:100vh;
   background:linear-gradient(135deg,#667eea,#764ba2);
-  padding:30px;
+  padding:40px;
+  position:relative;
 }
-.card{
-  background:#fff;
-  padding:25px;
-  border-radius:18px;
-  box-shadow:0 25px 50px rgba(0,0,0,.25);
-  max-width:900px;
-  margin:auto;
-}
-h2{margin-top:0}
-input,button{
-  padding:10px;
-  border-radius:8px;
-  border:1px solid #ccc;
-}
-button{
-  background:linear-gradient(135deg,#667eea,#764ba2);
-  border:none;
+
+.home-btn{
+  position:absolute;
+  top:20px;
+  left:20px;
+  background:#ffffff20;
+  backdrop-filter:blur(8px);
+  border:1px solid #ffffff40;
   color:#fff;
+  padding:8px 14px;
+  border-radius:8px;
+  font-size:14px;
   cursor:pointer;
+  text-decoration:none;
   font-weight:600;
 }
+
+.home-btn:hover{
+  background:#ffffff35;
+}
+
+.card{
+  background:#fff;
+  padding:30px;
+  border-radius:16px;
+  box-shadow:0 20px 40px rgba(0,0,0,.25);
+  max-width:1000px;
+  margin:auto;
+}
+
+h2{text-align:center;margin-bottom:20px}
+
 table{
   width:100%;
   border-collapse:collapse;
-  margin-top:20px;
 }
+
 th,td{
   padding:10px;
-  border-bottom:1px solid #ddd;
-  text-align:center;
+  border-bottom:1px solid #eee;
+  text-align:left;
 }
-.logout{
-  float:right;
-  background:#ef4444;
-}
-.hidden{
-  display:none;
+
+th{
+  background:#f3f4f6;
 }
 </style>
 </head>
+
 <body>
 
+<a href="index.html" class="home-btn">← Home</a>
+
 <div class="card">
-
-<!-- LOGIN SECTION -->
-<div id="loginSection">
-  <h2>Admin Login</h2>
-  <input type="email" id="email" placeholder="Admin Email"><br><br>
-  <input type="password" id="password" placeholder="Password"><br><br>
-  <button id="loginBtn">Login</button>
-</div>
-
-<!-- DASHBOARD SECTION -->
-<div id="dashboardSection" class="hidden">
-  <h2>Admin Dashboard</h2>
-  <button class="logout" id="logoutBtn">Logout</button>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Requester</th>
-        <th>No</th>
-        <th>Sample</th>
-        <th>Queue</th>
-        <th>Code</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="dataBody"></tbody>
-  </table>
-</div>
-
+<h2>Admin Dashboard</h2>
+<table id="dataTable">
+<thead>
+<tr>
+<th>Date</th>
+<th>Requester</th>
+<th>No Sample</th>
+<th>Sample Name</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, getDocs, deleteDoc, doc }
+import { getFirestore, collection, getDocs } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -105,70 +98,26 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
 
-const loginSection = document.getElementById("loginSection");
-const dashboardSection = document.getElementById("dashboardSection");
-const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const dataBody = document.getElementById("dataBody");
-
-loginBtn.addEventListener("click", async ()=>{
-  try{
-    await signInWithEmailAndPassword(
-      auth,
-      email.value,
-      password.value
-    );
-  }catch(err){
-    alert(err.code);
-  }
-});
-
-logoutBtn.addEventListener("click", async ()=>{
-  await signOut(auth);
-});
-
-onAuthStateChanged(auth, async (user)=>{
-  if(user){
-    loginSection.classList.add("hidden");
-    dashboardSection.classList.remove("hidden");
-    loadData();
-  }else{
-    loginSection.classList.remove("hidden");
-    dashboardSection.classList.add("hidden");
-  }
-});
-
 async function loadData(){
-  dataBody.innerHTML = "";
-  const querySnapshot = await getDocs(collection(db,"samples"));
+  const snap = await getDocs(collection(db,"samples"));
+  const tbody = document.querySelector("#dataTable tbody");
 
-  querySnapshot.forEach((docSnap)=>{
-    const data = docSnap.data();
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-      <td>${data.date}</td>
-      <td>${data.requester}</td>
-      <td>${data.noSample}</td>
-      <td>${data.sampleName}</td>
-      <td>${data.queue}</td>
-      <td>${data.sampleCode}</td>
-      <td><button onclick="deleteData('${docSnap.id}')">Delete</button></td>
+  snap.forEach(doc=>{
+    const d = doc.data();
+    tbody.innerHTML += `
+      <tr>
+        <td>${d.date}</td>
+        <td>${d.requester}</td>
+        <td>${d.noSample}</td>
+        <td>${d.sampleName}</td>
+      </tr>
     `;
-
-    dataBody.appendChild(row);
   });
 }
 
-window.deleteData = async function(id){
-  if(confirm("Hapus data ini?")){
-    await deleteDoc(doc(db,"samples",id));
-    loadData();
-  }
-};
+loadData();
 </script>
 
 </body>
