@@ -38,6 +38,26 @@ body{
   background:#ffffff35;
 }
 
+/* 🔹 TAMBAHAN STYLE LOGOUT */
+.logout-btn{
+  position:absolute;
+  top:20px;
+  right:20px;
+  background:#ffffff20;
+  backdrop-filter:blur(8px);
+  border:1px solid #ffffff40;
+  color:#fff;
+  padding:8px 14px;
+  border-radius:8px;
+  font-size:14px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.logout-btn:hover{
+  background:#ffffff35;
+}
+
 .card{
   background:#fff;
   padding:30px;
@@ -84,6 +104,9 @@ button:hover{
 
 <a href="index.html" class="home-btn">← Home</a>
 
+<!-- 🔹 TOMBOL LOGOUT DITAMBAHKAN -->
+<button class="logout-btn" onclick="logout()">Logout</button>
+
 <div class="card">
 <h2>Input Sample</h2>
 
@@ -101,6 +124,12 @@ Preview Code: <span id="preview">-</span>
 
 <script>
 if(sessionStorage.getItem("userAccess") !== "true"){
+  location.href = "user-login.html";
+}
+
+/* 🔹 SCRIPT LOGOUT DITAMBAHKAN */
+function logout(){
+  sessionStorage.removeItem("userAccess");
   location.href = "user-login.html";
 }
 </script>
@@ -196,3 +225,6 @@ window.saveSample = async function(){
   }
 }
 </script>
+
+</body>
+</html>
