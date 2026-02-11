@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+
+<style>
+*{box-sizing:border-box;font-family:Segoe UI,Arial}
+body{
+  margin:0;
+  min-height:100vh;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  padding:30px;
+}
+.card{
+  background:#fff;
+  padding:25px;
+  border-radius:18px;
+  box-shadow:0 25px 50px rgba(0,0,0,.25);
+  max-width:900px;
+  margin:auto;
+}
+h2{margin-top:0}
+input,button{
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+button{
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  border:none;
+  color:#fff;
+  cursor:pointer;
+  font-weight:600;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
+}
+th,td{
+  padding:10px;
+  border-bottom:1px solid #ddd;
+  text-align:center;
+}
+.logout{
+  float:right;
+  background:#ef4444;
+}
+.hidden{
+  display:none;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+<!-- LOGIN SECTION -->
+<div id="loginSection">
+  <h2>Admin Login</h2>
+  <input type="email" id="email" placeholder="Admin Email"><br><br>
+  <input type="password" id="password" placeholder="Password"><br><br>
+  <button id="loginBtn">Login</button>
+</div>
+
+<!-- DASHBOARD SECTION -->
+<div id="dashboardSection" class="hidden">
+  <h2>Admin Dashboard</h2>
+  <button class="logout" id="logoutBtn">Logout</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Requester</th>
+        <th>No</th>
+        <th>Sample</th>
+        <th>Queue</th>
+        <th>Code</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="dataBody"></tbody>
+  </table>
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, getDocs, deleteDoc, doc }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
+  authDomain: "analysis-request-sample.firebaseapp.com",
+  projectId: "analysis-request-sample",
+  storageBucket: "analysis-request-sample.firebasestorage.app",
+  messagingSenderId: "496722658784",
+  appId: "1:496722658784:web:fda4b31684fb41029dd785"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const loginSection = document.getElementById("loginSection");
+const dashboardSection = document.getElementById("dashboardSection");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const dataBody = document.getElementById("dataBody");
+
+loginBtn.addEventListener("click", async ()=>{
+  try{
+    await signInWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    );
+  }catch(err){
+    alert(err.code);
+  }
+});
+
+logoutBtn.addEventListener("click", async ()=>{
+  await signOut(auth);
+});
+
+onAuthStateChanged(auth, async (user)=>{
+  if(user){
+    loginSection.classList.add("hidden");
+    dashboardSection.classList.remove("hidden");
+    loadData();
+  }else{
+    loginSection.classList.remove("hidden");
+    dashboardSection.classList.add("hidden");
+  }
+});
+
+async function loadData(){
+  dataBody.innerHTML = "";
+  const querySnapshot = await getDocs(collection(db,"samples"));
+
+  querySnapshot.forEach((docSnap)=>{
+    const data = docSnap.data();
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${data.date}</td>
+      <td>${data.requester}</td>
+      <td>${data.noSample}</td>
+      <td>${data.sampleName}</td>
+      <td>${data.queue}</td>
+      <td>${data.sampleCode}</td>
+      <td><button onclick="deleteData('${docSnap.id}')">Delete</button></td>
+    `;
+
+    dataBody.appendChild(row);
+  });
+}
+
+window.deleteData = async function(id){
+  if(confirm("Hapus data ini?")){
+    await deleteDoc(doc(db,"samples",id));
+    loadData();
+  }
+};
+</script>
+
+</body>
+</html>
