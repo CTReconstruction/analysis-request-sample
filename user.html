@@ -121,8 +121,8 @@ const db = getFirestore(app);
 const dateInput = document.getElementById("date");
 const preview = document.getElementById("preview");
 
-// 🔹 AUTO GENERATE PREVIEW
-dateInput.addEventListener("change", generatePreview);
+// 🔹 AUTO GENERATE SAAT TANGGAL DIUBAH
+dateInput.addEventListener("input", generatePreview);
 
 async function generatePreview(){
   if(!dateInput.value){
@@ -130,22 +130,27 @@ async function generatePreview(){
     return;
   }
 
-  const d = new Date(dateInput.value);
+  try{
+    const d = new Date(dateInput.value);
 
-  const yearLetter = String.fromCharCode(65 + (d.getFullYear() - 2021));
-  const monthLetter = String.fromCharCode(65 + d.getMonth());
-  const dayFormatted = String(d.getDate()).padStart(2,"0");
+    const yearLetter = String.fromCharCode(65 + (d.getFullYear() - 2021));
+    const monthLetter = String.fromCharCode(65 + d.getMonth());
+    const dayFormatted = String(d.getDate()).padStart(2,"0");
 
-  // Hitung jumlah sample di tanggal tersebut
-  const q = query(
-    collection(db,"samples"),
-    where("date","==",dateInput.value)
-  );
+    const q = query(
+      collection(db,"samples"),
+      where("date","==",dateInput.value)
+    );
 
-  const snap = await getDocs(q);
-  const queue = snap.size + 1;
+    const snap = await getDocs(q);
+    const queue = snap.size + 1;
 
-  preview.innerText = `${yearLetter}${monthLetter}${dayFormatted}-${queue}`;
+    preview.innerText = `${yearLetter}${monthLetter}${dayFormatted}-${queue}`;
+  }
+  catch(error){
+    console.error(error);
+    preview.innerText = "Error";
+  }
 }
 
 // 🔹 SAVE DATA
@@ -156,30 +161,31 @@ window.saveSample = async function(){
     return;
   }
 
-  if(preview.innerText === "-"){
+  if(preview.innerText === "-" || preview.innerText === "Error"){
     alert("Preview belum terbentuk");
     return;
   }
 
-  await addDoc(collection(db,"samples"),{
-    date: dateInput.value,
-    requester: requester.value || "-",
-    noSample: noSample.value || "-",
-    sampleName: sampleName.value || "-",
-    sampleCode: preview.innerText,
-    createdAt: new Date()
-  });
+  try{
+    await addDoc(collection(db,"samples"),{
+      date: dateInput.value,
+      requester: requester.value || "-",
+      noSample: noSample.value || "-",
+      sampleName: sampleName.value || "-",
+      sampleCode: preview.innerText,
+      createdAt: new Date()
+    });
 
-  alert("Data berhasil disimpan\nCode: " + preview.innerText);
+    alert("Data berhasil disimpan\nCode: " + preview.innerText);
 
-  // 🔹 RESET
-  requester.value="";
-  noSample.value="";
-  sampleName.value="";
-  dateInput.value="";
-  preview.innerText="-";
+    requester.value="";
+    noSample.value="";
+    sampleName.value="";
+    dateInput.value="";
+    preview.innerText="-";
+  }
+  catch(error){
+    alert("Gagal menyimpan: " + error.message);
+  }
 }
 </script>
-
-</body>
-</html>
