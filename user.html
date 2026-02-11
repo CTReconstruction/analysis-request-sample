@@ -38,26 +38,6 @@ body{
   background:#ffffff35;
 }
 
-/* 🔹 TAMBAHAN STYLE LOGOUT */
-.logout-btn{
-  position:absolute;
-  top:20px;
-  right:20px;
-  background:#ffffff20;
-  backdrop-filter:blur(8px);
-  border:1px solid #ffffff40;
-  color:#fff;
-  padding:8px 14px;
-  border-radius:8px;
-  font-size:14px;
-  cursor:pointer;
-  font-weight:600;
-}
-
-.logout-btn:hover{
-  background:#ffffff35;
-}
-
 .card{
   background:#fff;
   padding:30px;
@@ -97,15 +77,22 @@ button:hover{
   font-weight:700;
   color:#667eea;
 }
+
+/* 🔴 LOGOUT STYLE */
+.logout-btn{
+  background:#ef4444;
+  margin-top:15px;
+}
+
+.logout-btn:hover{
+  background:#dc2626;
+}
 </style>
 </head>
 
 <body>
 
 <a href="index.html" class="home-btn">← Home</a>
-
-<!-- 🔹 TOMBOL LOGOUT DITAMBAHKAN -->
-<button class="logout-btn" onclick="logout()">Logout</button>
 
 <div class="card">
 <h2>Input Sample</h2>
@@ -120,6 +107,10 @@ Preview Code: <span id="preview">-</span>
 </div>
 
 <button onclick="saveSample()">Generate & Save</button>
+
+<!-- 🔴 LOGOUT DIBAWAH FORM -->
+<button class="logout-btn" onclick="logout()">Logout</button>
+
 </div>
 
 <script>
@@ -127,7 +118,6 @@ if(sessionStorage.getItem("userAccess") !== "true"){
   location.href = "user-login.html";
 }
 
-/* 🔹 SCRIPT LOGOUT DITAMBAHKAN */
 function logout(){
   sessionStorage.removeItem("userAccess");
   location.href = "user-login.html";
@@ -141,7 +131,6 @@ import {
   query, where, getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  
 const firebaseConfig = {
   apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
   authDomain: "analysis-request-sample.firebaseapp.com",
@@ -157,7 +146,6 @@ const db = getFirestore(app);
 const dateInput = document.getElementById("date");
 const preview = document.getElementById("preview");
 
-// 🔹 AUTO GENERATE SAAT TANGGAL DIUBAH
 dateInput.addEventListener("input", generatePreview);
 
 async function generatePreview(){
@@ -189,7 +177,6 @@ async function generatePreview(){
   }
 }
 
-// 🔹 SAVE DATA
 window.saveSample = async function(){
 
   if(!dateInput.value){
