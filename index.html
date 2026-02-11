@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sample Request System</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  font-family:Segoe UI, Arial;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+}
+
+.card{
+  background:#fff;
+  padding:40px;
+  width:380px;
+  border-radius:18px;
+  box-shadow:0 25px 50px rgba(0,0,0,.25);
+  text-align:center;
+}
+
+h1{
+  margin-bottom:10px;
+}
+
+p{
+  color:#666;
+  margin-bottom:30px;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  margin-top:12px;
+  border-radius:10px;
+  border:none;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.user-btn{
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:#fff;
+}
+
+.admin-btn{
+  background:#f3f4f6;
+}
+
+button:hover{
+  transform:translateY(-2px);
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1>Sample Request</h1>
+  <p>Pilih akses untuk melanjutkan</p>
+
+  <button class="user-btn" onclick="location.href='user.html'">
+    Masuk sebagai User
+  </button>
+
+  <button class="admin-btn" onclick="location.href='admin.html'">
+    Login Admin
+  </button>
+</div>
+
+</body>
+</html>
