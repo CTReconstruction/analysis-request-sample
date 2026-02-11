@@ -61,6 +61,20 @@ button{
 }
 
 button:hover{opacity:.9}
+
+/* tambahan kecil supaya icon rapi */
+.password-wrapper{
+  position:relative;
+}
+
+.password-wrapper span{
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  cursor:pointer;
+  font-size:18px;
+}
 </style>
 </head>
 
@@ -72,10 +86,21 @@ button:hover{opacity:.9}
 <h2>Admin Login</h2>
 
 <input type="email" id="email" placeholder="Admin Email">
-<input type="password" id="password" placeholder="Password">
+
+<div class="password-wrapper">
+  <input type="password" id="password" placeholder="Password">
+  <span onclick="togglePassword()">👁</span>
+</div>
 
 <button onclick="login()">Login</button>
 </div>
+
+<script>
+function togglePassword(){
+  const passField = document.getElementById("password");
+  passField.type = passField.type === "password" ? "text" : "password";
+}
+</script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
