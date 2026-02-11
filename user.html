@@ -67,6 +67,16 @@ button{
 button:hover{
   opacity:.9;
 }
+
+.preview-box{
+  margin-top:15px;
+  padding:10px;
+  background:#f3f4f6;
+  border-radius:8px;
+  text-align:center;
+  font-weight:700;
+  color:#667eea;
+}
 </style>
 </head>
 
@@ -82,13 +92,19 @@ button:hover{
 <input type="number" id="noSample" placeholder="No of Sample">
 <input type="text" id="sampleName" placeholder="Sample Name">
 
-<button onclick="saveSample()">Save</button>
+<div class="preview-box">
+Preview Code: <span id="preview">-</span>
+</div>
+
+<button onclick="saveSample()">Generate & Save</button>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { 
+  getFirestore, collection, addDoc,
+  query, where, getDocs
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
@@ -102,25 +118,66 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+const dateInput = document.getElementById("date");
+const preview = document.getElementById("preview");
+
+// 🔹 AUTO GENERATE PREVIEW
+dateInput.addEventListener("change", generatePreview);
+
+async function generatePreview(){
+  if(!dateInput.value){
+    preview.innerText = "-";
+    return;
+  }
+
+  const d = new Date(dateInput.value);
+
+  const yearLetter = String.fromCharCode(65 + (d.getFullYear() - 2021));
+  const monthLetter = String.fromCharCode(65 + d.getMonth());
+  const dayFormatted = String(d.getDate()).padStart(2,"0");
+
+  // Hitung jumlah sample di tanggal tersebut
+  const q = query(
+    collection(db,"samples"),
+    where("date","==",dateInput.value)
+  );
+
+  const snap = await getDocs(q);
+  const queue = snap.size + 1;
+
+  preview.innerText = `${yearLetter}${monthLetter}${dayFormatted}-${queue}`;
+}
+
+// 🔹 SAVE DATA
 window.saveSample = async function(){
-  if(!date.value){
+
+  if(!dateInput.value){
     alert("Tanggal wajib diisi");
     return;
   }
 
+  if(preview.innerText === "-"){
+    alert("Preview belum terbentuk");
+    return;
+  }
+
   await addDoc(collection(db,"samples"),{
-    date: date.value,
+    date: dateInput.value,
     requester: requester.value || "-",
     noSample: noSample.value || "-",
     sampleName: sampleName.value || "-",
+    sampleCode: preview.innerText,
     createdAt: new Date()
   });
 
-  alert("Data berhasil disimpan");
+  alert("Data berhasil disimpan\nCode: " + preview.innerText);
 
+  // 🔹 RESET
   requester.value="";
   noSample.value="";
   sampleName.value="";
+  dateInput.value="";
+  preview.innerText="-";
 }
 </script>
 
