@@ -7,6 +7,7 @@
 
 <style>
 *{box-sizing:border-box;font-family:Segoe UI,Arial}
+
 body{
   margin:0;
   min-height:100vh;
@@ -14,71 +15,79 @@ body{
   justify-content:center;
   align-items:center;
   background:linear-gradient(135deg,#667eea,#764ba2);
-  padding:20px;
+  position:relative;
 }
+
+.home-btn{
+  position:absolute;
+  top:20px;
+  left:20px;
+  background:#ffffff20;
+  backdrop-filter:blur(8px);
+  border:1px solid #ffffff40;
+  color:#fff;
+  padding:8px 14px;
+  border-radius:8px;
+  font-size:14px;
+  cursor:pointer;
+  text-decoration:none;
+  font-weight:600;
+}
+
+.home-btn:hover{
+  background:#ffffff35;
+}
+
 .card{
   background:#fff;
   padding:30px;
-  width:100%;
-  max-width:500px;
-  border-radius:18px;
-  box-shadow:0 25px 50px rgba(0,0,0,.25);
+  width:420px;
+  border-radius:16px;
+  box-shadow:0 20px 40px rgba(0,0,0,.25)
 }
+
 h2{text-align:center;margin-bottom:20px}
-label{font-weight:600;margin-top:12px;display:block}
+
 input,button{
   width:100%;
-  padding:10px;
-  margin-top:6px;
+  padding:12px;
+  margin-top:10px;
   border-radius:8px;
-  border:1px solid #ccc;
+  border:1px solid #ccc
 }
+
 button{
-  margin-top:18px;
   background:linear-gradient(135deg,#667eea,#764ba2);
   border:none;
   color:#fff;
-  font-weight:600;
-  cursor:pointer;
-}
-#preview{
-  margin-top:10px;
   font-weight:700;
-  color:#667eea;
+  cursor:pointer
+}
+
+button:hover{
+  opacity:.9;
 }
 </style>
 </head>
+
 <body>
+
+<a href="index.html" class="home-btn">← Home</a>
 
 <div class="card">
 <h2>Input Sample</h2>
 
-<label>Date</label>
 <input type="date" id="date">
+<input type="text" id="requester" placeholder="Requester">
+<input type="number" id="noSample" placeholder="No of Sample">
+<input type="text" id="sampleName" placeholder="Sample Name">
 
-<label>Requester</label>
-<input type="text" id="requester">
-
-<label>No of Sample</label>
-<input type="number" id="noSample">
-
-<label>Sample Name</label>
-<input type="text" id="sampleName">
-
-<label>Sample Queue</label>
-<input type="number" id="queue">
-
-<div>
-  <strong>Preview Code:</strong>
-  <div id="preview">-</div>
-</div>
-
-<button id="saveBtn">Save Sample</button>
+<button onclick="saveSample()">Save</button>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc }
+import { getFirestore, collection, addDoc } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -93,59 +102,26 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const dateInput = document.getElementById("date");
-const queueInput = document.getElementById("queue");
-const preview = document.getElementById("preview");
-const saveBtn = document.getElementById("saveBtn");
-
-function generateCode(){
-  if(!dateInput.value || !queueInput.value){
-    preview.innerText = "-";
+window.saveSample = async function(){
+  if(!date.value){
+    alert("Tanggal wajib diisi");
     return;
   }
 
-  const d = new Date(dateInput.value);
-  const yearLetter = String.fromCharCode(65 + (d.getFullYear() - 2021));
-  const monthLetter = String.fromCharCode(65 + d.getMonth());
-  const day = String(d.getDate()).padStart(2,"0");
+  await addDoc(collection(db,"samples"),{
+    date: date.value,
+    requester: requester.value || "-",
+    noSample: noSample.value || "-",
+    sampleName: sampleName.value || "-",
+    createdAt: new Date()
+  });
 
-  preview.innerText = `${yearLetter}${monthLetter}${day}-${queueInput.value}`;
+  alert("Data berhasil disimpan");
+
+  requester.value="";
+  noSample.value="";
+  sampleName.value="";
 }
-
-dateInput.addEventListener("change", generateCode);
-queueInput.addEventListener("input", generateCode);
-
-saveBtn.addEventListener("click", async () => {
-
-  if(!dateInput.value || !queueInput.value){
-    alert("Date dan Queue wajib diisi");
-    return;
-  }
-
-  const sampleCode = preview.innerText;
-
-  try{
-    await addDoc(collection(db,"samples"),{
-      date: dateInput.value,
-      requester: requester.value || "-",
-      noSample: noSample.value || "-",
-      sampleName: sampleName.value || "-",
-      queue: queueInput.value,
-      sampleCode: sampleCode,
-      createdAt: new Date()
-    });
-
-    alert("Data berhasil disimpan");
-
-    // reset form
-    document.querySelectorAll("input").forEach(i=>i.value="");
-    preview.innerText = "-";
-
-  }catch(err){
-    alert("Gagal simpan: " + err.message);
-  }
-
-});
 </script>
 
 </body>
