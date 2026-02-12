@@ -96,29 +96,6 @@ select, input[type="date"]{
   font-size:13px;
 }
 
-/* STATUS BADGE */
-.status-badge{
-  padding:4px 10px;
-  border-radius:20px;
-  font-size:12px;
-  font-weight:700;
-  color:#000;
-  display:inline-block;
-}
-
-.status-pending{
-  background:#facc15;
-}
-
-.status-completed{
-  background:#22c55e;
-  color:#fff;
-}
-.report-select option[value="Reported"]{
-  background:#22c55e;
-  color:#fff;
-}
-
 /* SUMMARY CARDS */
 .summary-cards{
   display:flex;
@@ -284,8 +261,7 @@ Logout
 <th>Report Date</th>
 </tr>
 </thead>
-<tbody id="tableBody">
-</tbody>
+<tbody id="tableBody"></tbody>
 </table>
 </div>
 
@@ -333,15 +309,6 @@ function convertToInputDate(ddmmyyyy){
   if(!ddmmyyyy) return "";
   const parts = ddmmyyyy.split("-");
   return `${parts[2]}-${parts[1]}-${parts[0]}`;
-}
-
-function statusBadge(status){
-  if(status === "Pending"){
-    return `<span class="status-badge status-pending">Pending</span>`;
-  }
-  if(status === "Completed" || status === "Reported"){
-    return `<span class="status-badge status-completed">${status}</span>`;
-  }
 }
 
 onAuthStateChanged(auth, (user) => {
@@ -395,8 +362,6 @@ window.loadData = async function(){
       <td><strong>${data.sampleCode || "-"}</strong></td>
 
       <td>
-        ${statusBadge(analysisStatus)}
-        <br><br>
         <select class="analysis-select">
           <option value="Pending" ${analysisStatus==="Pending"?"selected":""}>Pending</option>
           <option value="Completed" ${analysisStatus==="Completed"?"selected":""}>Completed</option>
@@ -410,8 +375,6 @@ window.loadData = async function(){
       </td>
 
       <td>
-        ${statusBadge(reportStatus)}
-        <br><br>
         <select class="report-select" ${analysisStatus!=="Completed"?"disabled":""}>
           <option value="Pending" ${reportStatus==="Pending"?"selected":""}>Pending</option>
           <option value="Reported" ${reportStatus==="Reported"?"selected":""}>Reported</option>
