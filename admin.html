@@ -90,7 +90,7 @@ button:hover{
   transform:translateY(-2px);
 }
 
-select{
+select, input{
   padding:10px;
   border-radius:8px;
   border:none;
@@ -98,7 +98,10 @@ select{
   font-weight:600;
 }
 
-/* 🔥 TOTAL DATA STYLE */
+input{
+  width:100%;
+}
+
 #totalData{
   margin-bottom:15px;
   font-weight:700;
@@ -171,7 +174,9 @@ Logout
   <option value="SEM EDX">SEM EDX</option>
 </select>
 
-<!-- 🔥 TOTAL DATA -->
+<!-- 🔍 SEARCH BAR -->
+<input type="text" id="searchInput" placeholder="Search by Sample Code or Requester...">
+
 <div id="totalData">
   Total CT Scan: 0
 </div>
@@ -218,6 +223,7 @@ const auth = getAuth(app);
 const tableBody = document.getElementById("tableBody");
 const filterType = document.getElementById("filterType");
 const totalData = document.getElementById("totalData");
+const searchInput = document.getElementById("searchInput");
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -239,8 +245,6 @@ window.loadData = async function(){
   const snap = await getDocs(q);
 
   tableBody.innerHTML = "";
-
-  /* 🔥 UPDATE TOTAL */
   totalData.innerText = `Total ${selectedType}: ${snap.size}`;
 
   snap.forEach(doc => {
@@ -259,7 +263,18 @@ window.loadData = async function(){
 
     tableBody.appendChild(row);
   });
-}
+};
+
+/* 🔍 REALTIME SEARCH */
+searchInput.addEventListener("keyup", function(){
+  const keyword = this.value.toLowerCase();
+  const rows = tableBody.getElementsByTagName("tr");
+
+  for(let i=0; i<rows.length; i++){
+    const rowText = rows[i].innerText.toLowerCase();
+    rows[i].style.display = rowText.includes(keyword) ? "" : "none";
+  }
+});
 
 window.logoutAdmin = async function(){
   await signOut(auth);
