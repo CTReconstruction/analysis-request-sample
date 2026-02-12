@@ -42,13 +42,12 @@ body::before{
   border:1px solid #ffffff40;
   color:#fff;
   padding:8px 14px;
-  border-radius:10px;
+  border-radius:8px;
   font-size:14px;
   cursor:pointer;
   text-decoration:none;
   font-weight:600;
   transition:.3s;
-  z-index:5;
 }
 
 .home-btn:hover{
@@ -56,7 +55,7 @@ body::before{
 }
 
 .container{
-  max-width:1250px;
+  max-width:1200px;
   margin:auto;
   backdrop-filter:blur(20px);
   background:rgba(255,255,255,0.15);
@@ -90,43 +89,33 @@ button:hover{
   transform:translateY(-2px);
 }
 
-select{
-  padding:6px 12px;
-  border-radius:20px;
-  border:none;
-  font-size:13px;
-  font-weight:600;
-  cursor:pointer;
-  transition:.2s;
-}
-
-select.analysis-select{
-  background:#facc15;
-  color:#000;
-}
-
-select.analysis-select.completed{
-  background:#22c55e;
-  color:#fff;
-}
-
-select.report-select{
-  background:#facc15;
-  color:#000;
-}
-
-select.report-select.reported{
-  background:#22c55e;
-  color:#fff;
-}
-
-input[type="date"]{
-  padding:5px;
+select, input[type="date"]{
+  padding:6px;
   border-radius:6px;
   border:none;
-  font-size:12px;
+  font-size:13px;
 }
 
+/* STATUS BADGE */
+.status-badge{
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:700;
+  color:#000;
+  display:inline-block;
+}
+
+.status-pending{
+  background:#facc15;
+}
+
+.status-completed{
+  background:#22c55e;
+  color:#fff;
+}
+
+/* CONTROL BAR */
 .control-bar{
   display:flex;
   justify-content:space-between;
@@ -144,9 +133,6 @@ input[type="date"]{
 
 #searchInput{
   width:250px;
-  padding:6px 10px;
-  border-radius:8px;
-  border:none;
 }
 
 #totalData{
@@ -160,7 +146,7 @@ input[type="date"]{
 table{
   width:100%;
   border-collapse:collapse;
-  min-width:1050px;
+  min-width:1000px;
   background:rgba(255,255,255,0.1);
   border-radius:12px;
   overflow:hidden;
@@ -230,7 +216,8 @@ Logout
 <th>Report Date</th>
 </tr>
 </thead>
-<tbody id="tableBody"></tbody>
+<tbody id="tableBody">
+</tbody>
 </table>
 </div>
 
@@ -244,7 +231,7 @@ import { getAuth, onAuthStateChanged, signOut }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
- apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
+  apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
   authDomain: "analysis-request-sample.firebaseapp.com",
   projectId: "analysis-request-sample",
   storageBucket: "analysis-request-sample.firebasestorage.app",
@@ -269,18 +256,9 @@ function formatDate(date){
   return `${day}-${month}-${year}`;
 }
 
-function setSelectStyle(select,type){
-  if(type==="analysis"){
-    select.classList.toggle("completed",select.value==="Completed");
-  }
-  if(type==="report"){
-    select.classList.toggle("reported",select.value==="Reported");
-  }
-}
-
-onAuthStateChanged(auth,(user)=>{
-  if(user) loadData();
-  else location.href="index.html";
+onAuthStateChanged(auth, (user) => {
+  if (user) loadData();
+  else location.href = "index.html";
 });
 
 window.loadData = async function(){
@@ -294,28 +272,28 @@ window.loadData = async function(){
 
   const snap = await getDocs(q);
 
-  tableBody.innerHTML="";
-  totalData.innerText=`Total ${selectedType}: ${snap.size}`;
+  tableBody.innerHTML = "";
+  totalData.innerText = `Total ${selectedType}: ${snap.size}`;
 
-  snap.forEach(docSnap=>{
-    const data=docSnap.data();
-    const docId=docSnap.id;
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
+    const docId = docSnap.id;
 
-    const analysisStatus=data.analysisStatus||"Pending";
-    const reportStatus=data.reportStatus||"Pending";
+    const analysisStatus = data.analysisStatus || "Pending";
+    const reportStatus = data.reportStatus || "Pending";
 
-    const analysisDate=data.analysisCompletedDate||"-";
-    const reportDate=data.reportReportedDate||"-";
+    const analysisDate = data.analysisCompletedDate ? data.analysisCompletedDate : "-";
+    const reportDate = data.reportReportedDate ? data.reportReportedDate : "-";
 
-    const row=document.createElement("tr");
+    const row = document.createElement("tr");
 
-    row.innerHTML=`
-      <td>${data.date||"-"}</td>
-      <td>${data.analysisType||"-"}</td>
-      <td>${data.requester||"-"}</td>
-      <td>${data.noSample||"-"}</td>
-      <td>${data.sampleName||"-"}</td>
-      <td><strong>${data.sampleCode||"-"}</strong></td>
+    row.innerHTML = `
+      <td>${data.date || "-"}</td>
+      <td>${data.analysisType || "-"}</td>
+      <td>${data.requester || "-"}</td>
+      <td>${data.noSample || "-"}</td>
+      <td>${data.sampleName || "-"}</td>
+      <td><strong>${data.sampleCode || "-"}</strong></td>
 
       <td>
         <select class="analysis-select">
@@ -326,8 +304,8 @@ window.loadData = async function(){
 
       <td>
         ${analysisStatus==="Completed"
-        ? `<input type="date" class="analysis-date" value="${analysisDate!=="-"?analysisDate.split("-").reverse().join("-"):""}">`
-        : `-`}
+          ? `<input type="date" class="analysis-date" value="${analysisDate!=="-"?analysisDate.split("-").reverse().join("-"):""}">`
+          : `-`}
       </td>
 
       <td>
@@ -339,62 +317,59 @@ window.loadData = async function(){
 
       <td>
         ${reportStatus==="Reported"
-        ? `<input type="date" class="report-date" value="${reportDate!=="-"?reportDate.split("-").reverse().join("-"):""}">`
-        : `-`}
+          ? `<input type="date" class="report-date" value="${reportDate!=="-"?reportDate.split("-").reverse().join("-"):""}">`
+          : `-`}
       </td>
     `;
 
     tableBody.appendChild(row);
 
-    const analysisSelect=row.querySelector(".analysis-select");
-    const reportSelect=row.querySelector(".report-select");
+    const analysisSelect = row.querySelector(".analysis-select");
+    const reportSelect = row.querySelector(".report-select");
 
-    setSelectStyle(analysisSelect,"analysis");
-    setSelectStyle(reportSelect,"report");
-
-    analysisSelect.addEventListener("change",async function(){
-      setSelectStyle(this,"analysis");
-
-      if(this.value==="Pending"){
+    analysisSelect.addEventListener("change", async function(){
+      if(this.value === "Pending"){
         await updateDoc(doc(db,"samples",docId),{
           analysisStatus:"Pending",
           analysisCompletedDate:null,
           reportStatus:"Pending",
           reportReportedDate:null
         });
+        loadData();
+      } else {
+        loadData();
       }
-      loadData();
     });
 
-    reportSelect.addEventListener("change",async function(){
-      setSelectStyle(this,"report");
-
-      if(this.value==="Pending"){
+    reportSelect.addEventListener("change", async function(){
+      if(this.value === "Pending"){
         await updateDoc(doc(db,"samples",docId),{
           reportStatus:"Pending",
           reportReportedDate:null
         });
+        loadData();
+      } else {
+        loadData();
       }
-      loadData();
     });
 
-    const analysisDateInput=row.querySelector(".analysis-date");
+    const analysisDateInput = row.querySelector(".analysis-date");
     if(analysisDateInput){
-      analysisDateInput.addEventListener("change",async function(){
+      analysisDateInput.addEventListener("change", async function(){
         await updateDoc(doc(db,"samples",docId),{
           analysisStatus:"Completed",
-          analysisCompletedDate:formatDate(this.value)
+          analysisCompletedDate: formatDate(this.value)
         });
         loadData();
       });
     }
 
-    const reportDateInput=row.querySelector(".report-date");
+    const reportDateInput = row.querySelector(".report-date");
     if(reportDateInput){
-      reportDateInput.addEventListener("change",async function(){
+      reportDateInput.addEventListener("change", async function(){
         await updateDoc(doc(db,"samples",docId),{
           reportStatus:"Reported",
-          reportReportedDate:formatDate(this.value)
+          reportReportedDate: formatDate(this.value)
         });
         loadData();
       });
@@ -403,19 +378,19 @@ window.loadData = async function(){
   });
 };
 
-searchInput.addEventListener("keyup",function(){
-  const keyword=this.value.toLowerCase();
-  const rows=tableBody.getElementsByTagName("tr");
+searchInput.addEventListener("keyup", function(){
+  const keyword = this.value.toLowerCase();
+  const rows = tableBody.getElementsByTagName("tr");
 
-  for(let i=0;i<rows.length;i++){
-    const rowText=rows[i].innerText.toLowerCase();
-    rows[i].style.display=rowText.includes(keyword)?"":"none";
+  for(let i=0; i<rows.length; i++){
+    const rowText = rows[i].innerText.toLowerCase();
+    rows[i].style.display = rowText.includes(keyword) ? "" : "none";
   }
 });
 
-window.logoutAdmin=async function(){
+window.logoutAdmin = async function(){
   await signOut(auth);
-  location.href="index.html";
+  location.href = "index.html";
 }
 </script>
 
