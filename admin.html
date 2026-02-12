@@ -17,8 +17,45 @@ body{
   overflow-x:hidden;
 }
 
+body::before{
+  content:"";
+  position:absolute;
+  width:700px;
+  height:700px;
+  background:radial-gradient(circle,rgba(255,255,255,0.25),transparent 60%);
+  top:-200px;
+  right:-200px;
+  animation:float 8s ease-in-out infinite alternate;
+}
+
+@keyframes float{
+  from{transform:translateY(0);}
+  to{transform:translateY(40px);}
+}
+
+.home-btn{
+  position:absolute;
+  top:20px;
+  left:20px;
+  background:#ffffff20;
+  backdrop-filter:blur(10px);
+  border:1px solid #ffffff40;
+  color:#fff;
+  padding:8px 14px;
+  border-radius:8px;
+  font-size:14px;
+  cursor:pointer;
+  text-decoration:none;
+  font-weight:600;
+  transition:.3s;
+}
+
+.home-btn:hover{
+  background:#ffffff35;
+}
+
 .container{
-  max-width:1300px;
+  max-width:1200px;
   margin:auto;
   backdrop-filter:blur(20px);
   background:rgba(255,255,255,0.15);
@@ -27,9 +64,60 @@ body{
   border-radius:22px;
   box-shadow:0 25px 50px rgba(0,0,0,.35);
   color:#fff;
+  position:relative;
+  z-index:1;
 }
 
-h2{text-align:center;margin-bottom:25px}
+h2{
+  text-align:center;
+  margin-bottom:25px;
+}
+
+button{
+  background:#ef4444;
+  color:#fff;
+  border:none;
+  padding:10px 16px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+  transition:.3s;
+}
+
+button:hover{
+  background:#dc2626;
+  transform:translateY(-2px);
+}
+
+select, input[type="date"]{
+  padding:6px;
+  border-radius:6px;
+  border:none;
+  font-size:13px;
+}
+
+/* STATUS BADGE */
+.status-badge{
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:700;
+  color:#000;
+  display:inline-block;
+}
+
+.status-pending{
+  background:#facc15;
+}
+
+.status-completed{
+  background:#22c55e;
+  color:#fff;
+}
+.report-select option[value="Reported"]{
+  background:#22c55e;
+  color:#fff;
+}
 
 /* SUMMARY CARDS */
 .summary-cards{
@@ -44,43 +132,61 @@ h2{text-align:center;margin-bottom:25px}
   min-width:180px;
   padding:20px;
   border-radius:16px;
+  background:rgba(255,255,255,0.2);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.3);
   text-align:center;
-  font-weight:600;
+  transition:.3s;
 }
 
-.card h3{margin:0;font-size:28px}
-.card p{margin:5px 0 0;font-size:14px}
-
-.total{background:linear-gradient(135deg,#3b82f6,#2563eb)}
-.pending{background:linear-gradient(135deg,#facc15,#eab308);color:#000}
-.completed{background:linear-gradient(135deg,#22c55e,#16a34a)}
-.reported{background:linear-gradient(135deg,#a855f7,#7e22ce)}
-
-/* STATUS DROPDOWN */
-select{
-  padding:6px 8px;
-  border-radius:8px;
-  border:none;
-  font-weight:600;
+.card:hover{
+  transform:translateY(-5px);
 }
 
-.status-pending{
-  background:#facc15;
-  color:#000;
+.card h3{
+  margin:0;
+  font-size:28px;
+  font-weight:800;
 }
 
-.status-completed{
-  background:#22c55e;
-  color:#fff;
+.card p{
+  margin:5px 0 0;
+  font-size:14px;
+  opacity:.9;
 }
 
-.status-reported{
-  background:#a855f7;
-  color:#fff;
+.card.total{ background:linear-gradient(135deg,#3b82f6,#2563eb); }
+.card.pending{ background:linear-gradient(135deg,#facc15,#eab308); color:#000; }
+.card.completed{ background:linear-gradient(135deg,#22c55e,#16a34a); }
+.card.reported{ background:linear-gradient(135deg,#a855f7,#7e22ce); }
+
+/* CONTROL BAR */
+.control-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  margin-bottom:20px;
+  flex-wrap:wrap;
 }
 
-/* TABLE */
-.table-wrapper{overflow-x:auto}
+.left-controls{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+#searchInput{
+  width:250px;
+}
+
+#totalData{
+  font-weight:700;
+}
+
+.table-wrapper{
+  overflow-x:auto;
+}
 
 table{
   width:100%;
@@ -88,9 +194,10 @@ table{
   min-width:1000px;
   background:rgba(255,255,255,0.1);
   border-radius:12px;
+  overflow:hidden;
 }
 
-th,td{
+th, td{
   padding:12px;
   text-align:center;
   font-size:13px;
@@ -98,9 +205,14 @@ th,td{
 
 th{
   background:rgba(255,255,255,0.25);
+  font-weight:700;
 }
 
-tr:hover{
+tbody tr{
+  border-bottom:1px solid rgba(255,255,255,0.2);
+}
+
+tbody tr:hover{
   background:rgba(255,255,255,0.15);
 }
 </style>
@@ -108,9 +220,15 @@ tr:hover{
 
 <body>
 
+<a href="index.html" class="home-btn">← Home</a>
+
 <div class="container">
 
 <h2>Admin Dashboard</h2>
+
+<button onclick="logoutAdmin()" style="margin-bottom:20px;">
+Logout
+</button>
 
 <!-- SUMMARY CARDS -->
 <div class="summary-cards">
@@ -118,30 +236,47 @@ tr:hover{
     <h3 id="totalCount">0</h3>
     <p>Total Samples</p>
   </div>
+
   <div class="card pending">
     <h3 id="pendingCount">0</h3>
     <p>Pending</p>
   </div>
+
   <div class="card completed">
     <h3 id="completedCount">0</h3>
     <p>Completed</p>
   </div>
+
   <div class="card reported">
     <h3 id="reportedCount">0</h3>
     <p>Reported</p>
   </div>
 </div>
 
-<select id="filterType" onchange="loadData()">
-  <option value="CT Scan">CT Scan</option>
-  <option value="SEM EDX">SEM EDX</option>
-</select>
+<div class="control-bar">
+  <div class="left-controls">
+    <select id="filterType" onchange="loadData()">
+      <option value="CT Scan">CT Scan</option>
+      <option value="SEM EDX">SEM EDX</option>
+    </select>
+
+    <input type="text" id="searchInput" placeholder="Search by Sample Code or Requester...">
+  </div>
+
+  <div id="totalData">
+    Total CT Scan: 0
+  </div>
+</div>
 
 <div class="table-wrapper">
 <table>
 <thead>
 <tr>
 <th>Date</th>
+<th>Analysis</th>
+<th>Requester</th>
+<th>No Sample</th>
+<th>Sample Name</th>
 <th>Sample Code</th>
 <th>Analysis Status</th>
 <th>Completed Date</th>
@@ -149,7 +284,8 @@ tr:hover{
 <th>Report Date</th>
 </tr>
 </thead>
-<tbody id="tableBody"></tbody>
+<tbody id="tableBody">
+</tbody>
 </table>
 </div>
 
@@ -159,20 +295,62 @@ tr:hover{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, getDocs, query, orderBy, where, updateDoc, doc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signOut }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID"
+  apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
+  authDomain: "analysis-request-sample.firebaseapp.com",
+  projectId: "analysis-request-sample",
+  storageBucket: "analysis-request-sample.firebasestorage.app",
+  messagingSenderId: "496722658784",
+  appId: "1:496722658784:web:fda4b31684fb41029dd785"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 const tableBody = document.getElementById("tableBody");
+const filterType = document.getElementById("filterType");
+const totalData = document.getElementById("totalData");
+const searchInput = document.getElementById("searchInput");
+
+const totalCount = document.getElementById("totalCount");
+const pendingCount = document.getElementById("pendingCount");
+const completedCount = document.getElementById("completedCount");
+const reportedCount = document.getElementById("reportedCount");
+
+function formatDate(date){
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2,"0");
+  const month = String(d.getMonth()+1).padStart(2,"0");
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+function convertToInputDate(ddmmyyyy){
+  if(!ddmmyyyy) return "";
+  const parts = ddmmyyyy.split("-");
+  return `${parts[2]}-${parts[1]}-${parts[0]}`;
+}
+
+function statusBadge(status){
+  if(status === "Pending"){
+    return `<span class="status-badge status-pending">Pending</span>`;
+  }
+  if(status === "Completed" || status === "Reported"){
+    return `<span class="status-badge status-completed">${status}</span>`;
+  }
+}
+
+onAuthStateChanged(auth, (user) => {
+  if (user) loadData();
+  else location.href = "index.html";
+});
 
 window.loadData = async function(){
-  const selectedType = document.getElementById("filterType").value;
+  const selectedType = filterType.value;
 
   const q = query(
     collection(db,"samples"),
@@ -182,56 +360,146 @@ window.loadData = async function(){
 
   const snap = await getDocs(q);
 
-  tableBody.innerHTML="";
+  tableBody.innerHTML = "";
+  totalData.innerText = `Total ${selectedType}: ${snap.size}`;
 
-  let pending=0, completed=0, reported=0;
+  let total = 0;
+  let pending = 0;
+  let completed = 0;
+  let reported = 0;
 
-  snap.forEach(docSnap=>{
+  snap.forEach(docSnap => {
     const data = docSnap.data();
-    const id = docSnap.id;
+    const docId = docSnap.id;
 
     const analysisStatus = data.analysisStatus || "Pending";
     const reportStatus = data.reportStatus || "Pending";
 
-    if(analysisStatus==="Pending") pending++;
-    if(analysisStatus==="Completed") completed++;
-    if(reportStatus==="Reported") reported++;
+    total++;
 
-    const row=document.createElement("tr");
+    if(analysisStatus === "Pending") pending++;
+    if(analysisStatus === "Completed") completed++;
+    if(reportStatus === "Reported") reported++;
 
-    row.innerHTML=`
-      <td>${data.date||"-"}</td>
-      <td><strong>${data.sampleCode||"-"}</strong></td>
+    const analysisDate = data.analysisCompletedDate || "";
+    const reportDate = data.reportReportedDate || "";
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${data.date || "-"}</td>
+      <td>${data.analysisType || "-"}</td>
+      <td>${data.requester || "-"}</td>
+      <td>${data.noSample || "-"}</td>
+      <td>${data.sampleName || "-"}</td>
+      <td><strong>${data.sampleCode || "-"}</strong></td>
 
       <td>
-        <select class="${analysisStatus==="Pending"?"status-pending":"status-completed"}">
+        ${statusBadge(analysisStatus)}
+        <br><br>
+        <select class="analysis-select">
           <option value="Pending" ${analysisStatus==="Pending"?"selected":""}>Pending</option>
           <option value="Completed" ${analysisStatus==="Completed"?"selected":""}>Completed</option>
         </select>
       </td>
 
-      <td>${data.analysisCompletedDate||"-"}</td>
+      <td>
+        ${analysisStatus==="Completed"
+          ? `<input type="date" class="analysis-date" value="${convertToInputDate(analysisDate)}">`
+          : `-`}
+      </td>
 
       <td>
-        <select class="${reportStatus==="Pending"?"status-pending":"status-reported"}">
+        ${statusBadge(reportStatus)}
+        <br><br>
+        <select class="report-select" ${analysisStatus!=="Completed"?"disabled":""}>
           <option value="Pending" ${reportStatus==="Pending"?"selected":""}>Pending</option>
           <option value="Reported" ${reportStatus==="Reported"?"selected":""}>Reported</option>
         </select>
       </td>
 
-      <td>${data.reportReportedDate||"-"}</td>
+      <td>
+        ${reportStatus==="Reported"
+          ? `<input type="date" class="report-date" value="${convertToInputDate(reportDate)}">`
+          : `-`}
+      </td>
     `;
 
     tableBody.appendChild(row);
+
+    const analysisSelect = row.querySelector(".analysis-select");
+    const reportSelect = row.querySelector(".report-select");
+
+    analysisSelect.addEventListener("change", async function(){
+      if(this.value === "Pending"){
+        await updateDoc(doc(db,"samples",docId),{
+          analysisStatus:"Pending",
+          analysisCompletedDate:null,
+          reportStatus:"Pending",
+          reportReportedDate:null
+        });
+      } else {
+        await updateDoc(doc(db,"samples",docId),{
+          analysisStatus:"Completed"
+        });
+      }
+      loadData();
+    });
+
+    reportSelect.addEventListener("change", async function(){
+      if(this.value === "Pending"){
+        await updateDoc(doc(db,"samples",docId),{
+          reportStatus:"Pending",
+          reportReportedDate:null
+        });
+      } else {
+        await updateDoc(doc(db,"samples",docId),{
+          reportStatus:"Reported"
+        });
+      }
+      loadData();
+    });
+
+    const analysisDateInput = row.querySelector(".analysis-date");
+    if(analysisDateInput){
+      analysisDateInput.addEventListener("change", async function(){
+        await updateDoc(doc(db,"samples",docId),{
+          analysisCompletedDate: formatDate(this.value)
+        });
+      });
+    }
+
+    const reportDateInput = row.querySelector(".report-date");
+    if(reportDateInput){
+      reportDateInput.addEventListener("change", async function(){
+        await updateDoc(doc(db,"samples",docId),{
+          reportReportedDate: formatDate(this.value)
+        });
+      });
+    }
+
   });
 
-  document.getElementById("totalCount").innerText=snap.size;
-  document.getElementById("pendingCount").innerText=pending;
-  document.getElementById("completedCount").innerText=completed;
-  document.getElementById("reportedCount").innerText=reported;
-}
+  totalCount.innerText = total;
+  pendingCount.innerText = pending;
+  completedCount.innerText = completed;
+  reportedCount.innerText = reported;
+};
 
-loadData();
+searchInput.addEventListener("keyup", function(){
+  const keyword = this.value.toLowerCase();
+  const rows = tableBody.getElementsByTagName("tr");
+
+  for(let i=0; i<rows.length; i++){
+    const rowText = rows[i].innerText.toLowerCase();
+    rows[i].style.display = rowText.includes(keyword) ? "" : "none";
+  }
+});
+
+window.logoutAdmin = async function(){
+  await signOut(auth);
+  location.href = "index.html";
+}
 </script>
 
 </body>
