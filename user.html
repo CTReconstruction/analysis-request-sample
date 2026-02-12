@@ -19,7 +19,6 @@ body{
   overflow:hidden;
 }
 
-/* subtle animated glow */
 body::before{
   content:"";
   position:absolute;
@@ -76,7 +75,7 @@ h2{
   letter-spacing:.5px;
 }
 
-input,button{
+input,select,button{
   width:100%;
   padding:12px;
   margin-top:12px;
@@ -85,7 +84,7 @@ input,button{
   font-size:14px;
 }
 
-input{
+input,select{
   background:rgba(255,255,255,0.2);
   color:#fff;
   border:1px solid rgba(255,255,255,0.3);
@@ -94,6 +93,10 @@ input{
 
 input::placeholder{
   color:rgba(255,255,255,0.8);
+}
+
+select option{
+  color:#000;
 }
 
 button{
@@ -120,7 +123,6 @@ button:hover{
   border:1px solid rgba(255,255,255,0.3);
 }
 
-/* 🔴 LOGOUT STYLE */
 .logout-btn{
   background:#ef4444;
   color:#fff;
@@ -142,6 +144,14 @@ button:hover{
 <h2>Input Sample</h2>
 
 <input type="date" id="date">
+
+<!-- 🔥 TAMBAHAN ANALYSIS TYPE -->
+<select id="analysisType">
+  <option value="">Select Analysis Type</option>
+  <option value="CT Scan">CT Scan</option>
+  <option value="SEM EDX">SEM EDX</option>
+</select>
+
 <input type="text" id="requester" placeholder="Requester">
 <input type="number" id="noSample" placeholder="No of Sample">
 <input type="text" id="sampleName" placeholder="Sample Name">
@@ -187,12 +197,14 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const dateInput = document.getElementById("date");
+const analysisTypeInput = document.getElementById("analysisType");
 const preview = document.getElementById("preview");
 
 dateInput.addEventListener("input", generatePreview);
+analysisTypeInput.addEventListener("change", generatePreview);
 
 async function generatePreview(){
-  if(!dateInput.value){
+  if(!dateInput.value || !analysisTypeInput.value){
     preview.innerText = "-";
     return;
   }
@@ -206,7 +218,8 @@ async function generatePreview(){
 
     const q = query(
       collection(db,"samples"),
-      where("date","==",dateInput.value)
+      where("date","==",dateInput.value),
+      where("analysisType","==",analysisTypeInput.value)
     );
 
     const snap = await getDocs(q);
@@ -227,6 +240,11 @@ window.saveSample = async function(){
     return;
   }
 
+  if(!analysisTypeInput.value){
+    alert("Pilih jenis analysis");
+    return;
+  }
+
   if(preview.innerText === "-" || preview.innerText === "Error"){
     alert("Preview belum terbentuk");
     return;
@@ -235,6 +253,7 @@ window.saveSample = async function(){
   try{
     await addDoc(collection(db,"samples"),{
       date: dateInput.value,
+      analysisType: analysisTypeInput.value, // 🔥 TAMBAHAN
       requester: requester.value || "-",
       noSample: noSample.value || "-",
       sampleName: sampleName.value || "-",
@@ -248,6 +267,7 @@ window.saveSample = async function(){
     noSample.value="";
     sampleName.value="";
     dateInput.value="";
+    analysisTypeInput.value="";
     preview.innerText="-";
   }
   catch(error){
