@@ -55,7 +55,7 @@ body::before{
 }
 
 .container{
-  max-width:1100px;
+  max-width:1200px;
   margin:auto;
   backdrop-filter:blur(20px);
   background:rgba(255,255,255,0.15);
@@ -71,7 +71,6 @@ body::before{
 h2{
   text-align:center;
   margin-bottom:25px;
-  letter-spacing:.5px;
 }
 
 button{
@@ -90,14 +89,33 @@ button:hover{
   transform:translateY(-2px);
 }
 
-select, input{
-  padding:10px;
-  border-radius:8px;
+select, input[type="date"]{
+  padding:6px;
+  border-radius:6px;
   border:none;
-  font-weight:600;
+  font-size:13px;
 }
 
-/* 🔥 CONTROL BAR */
+/* STATUS BADGE */
+.status-badge{
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:700;
+  color:#000;
+  display:inline-block;
+}
+
+.status-pending{
+  background:#facc15;
+}
+
+.status-completed{
+  background:#22c55e;
+  color:#fff;
+}
+
+/* CONTROL BAR */
 .control-bar{
   display:flex;
   justify-content:space-between;
@@ -119,28 +137,25 @@ select, input{
 
 #totalData{
   font-weight:700;
-  font-size:15px;
 }
 
 .table-wrapper{
   overflow-x:auto;
-  margin-top:10px;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  margin-top:10px;
-  min-width:700px;
+  min-width:1000px;
   background:rgba(255,255,255,0.1);
   border-radius:12px;
   overflow:hidden;
 }
 
 th, td{
-  padding:14px;
+  padding:12px;
   text-align:center;
-  font-size:14px;
+  font-size:13px;
 }
 
 th{
@@ -150,22 +165,10 @@ th{
 
 tbody tr{
   border-bottom:1px solid rgba(255,255,255,0.2);
-  transition:.2s;
 }
 
 tbody tr:hover{
   background:rgba(255,255,255,0.15);
-}
-
-td strong{
-  color:#fff;
-  letter-spacing:.5px;
-}
-
-@media (max-width:768px){
-  body{padding:20px;}
-  .container{padding:20px;}
-  th, td{padding:10px;font-size:13px;}
 }
 </style>
 </head>
@@ -182,9 +185,7 @@ td strong{
 Logout
 </button>
 
-<!-- 🔥 CONTROL BAR -->
 <div class="control-bar">
-
   <div class="left-controls">
     <select id="filterType" onchange="loadData()">
       <option value="CT Scan">CT Scan</option>
@@ -197,7 +198,6 @@ Logout
   <div id="totalData">
     Total CT Scan: 0
   </div>
-
 </div>
 
 <div class="table-wrapper">
@@ -210,6 +210,10 @@ Logout
 <th>No Sample</th>
 <th>Sample Name</th>
 <th>Sample Code</th>
+<th>Analysis Status</th>
+<th>Completed Date</th>
+<th>Report Status</th>
+<th>Report Date</th>
 </tr>
 </thead>
 <tbody id="tableBody">
@@ -221,7 +225,7 @@ Logout
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs, query, orderBy, where }
+import { getFirestore, collection, getDocs, query, orderBy, where, updateDoc, doc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -244,12 +248,17 @@ const filterType = document.getElementById("filterType");
 const totalData = document.getElementById("totalData");
 const searchInput = document.getElementById("searchInput");
 
+function formatDate(date){
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2,"0");
+  const month = String(d.getMonth()+1).padStart(2,"0");
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
 onAuthStateChanged(auth, (user) => {
-  if (user) {
-    loadData();
-  } else {
-    location.href = "index.html";
-  }
+  if (user) loadData();
+  else location.href = "index.html";
 });
 
 window.loadData = async function(){
@@ -266,8 +275,15 @@ window.loadData = async function(){
   tableBody.innerHTML = "";
   totalData.innerText = `Total ${selectedType}: ${snap.size}`;
 
-  snap.forEach(doc => {
-    const data = doc.data();
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
+    const docId = docSnap.id;
+
+    const analysisStatus = data.analysisStatus || "Pending";
+    const reportStatus = data.reportStatus || "Pending";
+
+    const analysisDate = data.analysisCompletedDate ? data.analysisCompletedDate : "-";
+    const reportDate = data.reportReportedDate ? data.reportReportedDate : "-";
 
     const row = document.createElement("tr");
 
@@ -278,9 +294,87 @@ window.loadData = async function(){
       <td>${data.noSample || "-"}</td>
       <td>${data.sampleName || "-"}</td>
       <td><strong>${data.sampleCode || "-"}</strong></td>
+
+      <td>
+        <select class="analysis-select">
+          <option value="Pending" ${analysisStatus==="Pending"?"selected":""}>Pending</option>
+          <option value="Completed" ${analysisStatus==="Completed"?"selected":""}>Completed</option>
+        </select>
+      </td>
+
+      <td>
+        ${analysisStatus==="Completed"
+          ? `<input type="date" class="analysis-date" value="${analysisDate!=="-"?analysisDate.split("-").reverse().join("-"):""}">`
+          : `-`}
+      </td>
+
+      <td>
+        <select class="report-select" ${analysisStatus!=="Completed"?"disabled":""}>
+          <option value="Pending" ${reportStatus==="Pending"?"selected":""}>Pending</option>
+          <option value="Reported" ${reportStatus==="Reported"?"selected":""}>Reported</option>
+        </select>
+      </td>
+
+      <td>
+        ${reportStatus==="Reported"
+          ? `<input type="date" class="report-date" value="${reportDate!=="-"?reportDate.split("-").reverse().join("-"):""}">`
+          : `-`}
+      </td>
     `;
 
     tableBody.appendChild(row);
+
+    const analysisSelect = row.querySelector(".analysis-select");
+    const reportSelect = row.querySelector(".report-select");
+
+    analysisSelect.addEventListener("change", async function(){
+      if(this.value === "Pending"){
+        await updateDoc(doc(db,"samples",docId),{
+          analysisStatus:"Pending",
+          analysisCompletedDate:null,
+          reportStatus:"Pending",
+          reportReportedDate:null
+        });
+        loadData();
+      } else {
+        loadData();
+      }
+    });
+
+    reportSelect.addEventListener("change", async function(){
+      if(this.value === "Pending"){
+        await updateDoc(doc(db,"samples",docId),{
+          reportStatus:"Pending",
+          reportReportedDate:null
+        });
+        loadData();
+      } else {
+        loadData();
+      }
+    });
+
+    const analysisDateInput = row.querySelector(".analysis-date");
+    if(analysisDateInput){
+      analysisDateInput.addEventListener("change", async function(){
+        await updateDoc(doc(db,"samples",docId),{
+          analysisStatus:"Completed",
+          analysisCompletedDate: formatDate(this.value)
+        });
+        loadData();
+      });
+    }
+
+    const reportDateInput = row.querySelector(".report-date");
+    if(reportDateInput){
+      reportDateInput.addEventListener("change", async function(){
+        await updateDoc(doc(db,"samples",docId),{
+          reportStatus:"Reported",
+          reportReportedDate: formatDate(this.value)
+        });
+        loadData();
+      });
+    }
+
   });
 };
 
