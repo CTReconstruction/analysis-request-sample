@@ -94,16 +94,30 @@ select, input{
   padding:10px;
   border-radius:8px;
   border:none;
-  margin-bottom:10px;
   font-weight:600;
 }
 
-input{
-  width:100%;
+/* 🔥 CONTROL BAR */
+.control-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  margin-bottom:20px;
+  flex-wrap:wrap;
+}
+
+.left-controls{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+#searchInput{
+  width:250px;
 }
 
 #totalData{
-  margin-bottom:15px;
   font-weight:700;
   font-size:15px;
 }
@@ -116,7 +130,7 @@ input{
 table{
   width:100%;
   border-collapse:collapse;
-  margin-top:20px;
+  margin-top:10px;
   min-width:700px;
   background:rgba(255,255,255,0.1);
   border-radius:12px;
@@ -164,21 +178,26 @@ td strong{
 
 <h2>Admin Dashboard</h2>
 
-<button onclick="logoutAdmin()" style="margin-bottom:15px;">
+<button onclick="logoutAdmin()" style="margin-bottom:20px;">
 Logout
 </button>
 
-<br>
-<select id="filterType" onchange="loadData()">
-  <option value="CT Scan">CT Scan</option>
-  <option value="SEM EDX">SEM EDX</option>
-</select>
+<!-- 🔥 CONTROL BAR -->
+<div class="control-bar">
 
-<!-- 🔍 SEARCH BAR -->
-<input type="text" id="searchInput" placeholder="Search by Sample Code or Requester...">
+  <div class="left-controls">
+    <select id="filterType" onchange="loadData()">
+      <option value="CT Scan">CT Scan</option>
+      <option value="SEM EDX">SEM EDX</option>
+    </select>
 
-<div id="totalData">
-  Total CT Scan: 0
+    <input type="text" id="searchInput" placeholder="Search by Sample Code or Requester...">
+  </div>
+
+  <div id="totalData">
+    Total CT Scan: 0
+  </div>
+
 </div>
 
 <div class="table-wrapper">
@@ -265,7 +284,6 @@ window.loadData = async function(){
   });
 };
 
-/* 🔍 REALTIME SEARCH */
 searchInput.addEventListener("keyup", function(){
   const keyword = this.value.toLowerCase();
   const rows = tableBody.getElementsByTagName("tr");
