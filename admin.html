@@ -223,6 +223,7 @@ Logout
 
 </div>
 
+<!-- HANYA BAGIAN SCRIPT YANG DIUBAH -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, getDocs, query, orderBy, where, updateDoc, doc }
@@ -256,6 +257,21 @@ function formatDate(date){
   return `${day}-${month}-${year}`;
 }
 
+function convertToInputDate(ddmmyyyy){
+  if(!ddmmyyyy) return "";
+  const parts = ddmmyyyy.split("-");
+  return `${parts[2]}-${parts[1]}-${parts[0]}`;
+}
+
+function statusBadge(status){
+  if(status === "Pending"){
+    return `<span class="status-badge status-pending">Pending</span>`;
+  }
+  if(status === "Completed" || status === "Reported"){
+    return `<span class="status-badge status-completed">${status}</span>`;
+  }
+}
+
 onAuthStateChanged(auth, (user) => {
   if (user) loadData();
   else location.href = "index.html";
@@ -282,8 +298,8 @@ window.loadData = async function(){
     const analysisStatus = data.analysisStatus || "Pending";
     const reportStatus = data.reportStatus || "Pending";
 
-    const analysisDate = data.analysisCompletedDate ? data.analysisCompletedDate : "-";
-    const reportDate = data.reportReportedDate ? data.reportReportedDate : "-";
+    const analysisDate = data.analysisCompletedDate || "";
+    const reportDate = data.reportReportedDate || "";
 
     const row = document.createElement("tr");
 
@@ -296,6 +312,8 @@ window.loadData = async function(){
       <td><strong>${data.sampleCode || "-"}</strong></td>
 
       <td>
+        ${statusBadge(analysisStatus)}
+        <br><br>
         <select class="analysis-select">
           <option value="Pending" ${analysisStatus==="Pending"?"selected":""}>Pending</option>
           <option value="Completed" ${analysisStatus==="Completed"?"selected":""}>Completed</option>
@@ -304,11 +322,13 @@ window.loadData = async function(){
 
       <td>
         ${analysisStatus==="Completed"
-          ? `<input type="date" class="analysis-date" value="${analysisDate!=="-"?analysisDate.split("-").reverse().join("-"):""}">`
+          ? `<input type="date" class="analysis-date" value="${convertToInputDate(analysisDate)}">`
           : `-`}
       </td>
 
       <td>
+        ${statusBadge(reportStatus)}
+        <br><br>
         <select class="report-select" ${analysisStatus!=="Completed"?"disabled":""}>
           <option value="Pending" ${reportStatus==="Pending"?"selected":""}>Pending</option>
           <option value="Reported" ${reportStatus==="Reported"?"selected":""}>Reported</option>
@@ -317,7 +337,7 @@ window.loadData = async function(){
 
       <td>
         ${reportStatus==="Reported"
-          ? `<input type="date" class="report-date" value="${reportDate!=="-"?reportDate.split("-").reverse().join("-"):""}">`
+          ? `<input type="date" class="report-date" value="${convertToInputDate(reportDate)}">`
           : `-`}
       </td>
     `;
@@ -327,6 +347,7 @@ window.loadData = async function(){
     const analysisSelect = row.querySelector(".analysis-select");
     const reportSelect = row.querySelector(".report-select");
 
+    // ✅ FIX 1: sekarang langsung update saat dropdown berubah
     analysisSelect.addEventListener("change", async function(){
       if(this.value === "Pending"){
         await updateDoc(doc(db,"samples",docId),{
@@ -335,10 +356,12 @@ window.loadData = async function(){
           reportStatus:"Pending",
           reportReportedDate:null
         });
-        loadData();
       } else {
-        loadData();
+        await updateDoc(doc(db,"samples",docId),{
+          analysisStatus:"Completed"
+        });
       }
+      loadData();
     });
 
     reportSelect.addEventListener("change", async function(){
@@ -347,20 +370,20 @@ window.loadData = async function(){
           reportStatus:"Pending",
           reportReportedDate:null
         });
-        loadData();
       } else {
-        loadData();
+        await updateDoc(doc(db,"samples",docId),{
+          reportStatus:"Reported"
+        });
       }
+      loadData();
     });
 
     const analysisDateInput = row.querySelector(".analysis-date");
     if(analysisDateInput){
       analysisDateInput.addEventListener("change", async function(){
         await updateDoc(doc(db,"samples",docId),{
-          analysisStatus:"Completed",
           analysisCompletedDate: formatDate(this.value)
         });
-        loadData();
       });
     }
 
@@ -368,10 +391,8 @@ window.loadData = async function(){
     if(reportDateInput){
       reportDateInput.addEventListener("change", async function(){
         await updateDoc(doc(db,"samples",docId),{
-          reportStatus:"Reported",
           reportReportedDate: formatDate(this.value)
         });
-        loadData();
       });
     }
 
