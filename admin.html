@@ -94,6 +94,42 @@ select, input[type="date"]{
   border-radius:6px;
   border:none;
   font-size:13px;
+  font-weight:600;
+}
+
+/* DROPDOWN COLORS */
+.dropdown-pending{
+  background:#facc15;
+  color:#000;
+}
+
+.dropdown-completed{
+  background:#22c55e;
+  color:#fff;
+}
+
+.dropdown-reported{
+  background:#a855f7;
+  color:#fff;
+}
+
+/* STATUS BADGE */
+.status-badge{
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:700;
+  color:#000;
+  display:inline-block;
+}
+
+.status-pending{
+  background:#facc15;
+}
+
+.status-completed{
+  background:#22c55e;
+  color:#fff;
 }
 
 /* SUMMARY CARDS */
@@ -137,7 +173,6 @@ select, input[type="date"]{
 .card.completed{ background:linear-gradient(135deg,#22c55e,#16a34a); }
 .card.reported{ background:linear-gradient(135deg,#a855f7,#7e22ce); }
 
-/* CONTROL BAR */
 .control-bar{
   display:flex;
   justify-content:space-between;
@@ -207,7 +242,6 @@ tbody tr:hover{
 Logout
 </button>
 
-<!-- SUMMARY CARDS -->
 <div class="summary-cards">
   <div class="card total">
     <h3 id="totalCount">0</h3>
@@ -261,7 +295,8 @@ Logout
 <th>Report Date</th>
 </tr>
 </thead>
-<tbody id="tableBody"></tbody>
+<tbody id="tableBody">
+</tbody>
 </table>
 </div>
 
@@ -311,6 +346,22 @@ function convertToInputDate(ddmmyyyy){
   return `${parts[2]}-${parts[1]}-${parts[0]}`;
 }
 
+function setDropdownColor(select){
+  select.classList.remove("dropdown-pending","dropdown-completed","dropdown-reported");
+  if(select.value === "Pending") select.classList.add("dropdown-pending");
+  if(select.value === "Completed") select.classList.add("dropdown-completed");
+  if(select.value === "Reported") select.classList.add("dropdown-reported");
+}
+
+function statusBadge(status){
+  if(status === "Pending"){
+    return `<span class="status-badge status-pending">Pending</span>`;
+  }
+  if(status === "Completed" || status === "Reported"){
+    return `<span class="status-badge status-completed">${status}</span>`;
+  }
+}
+
 onAuthStateChanged(auth, (user) => {
   if (user) loadData();
   else location.href = "index.html";
@@ -343,7 +394,6 @@ window.loadData = async function(){
     const reportStatus = data.reportStatus || "Pending";
 
     total++;
-
     if(analysisStatus === "Pending") pending++;
     if(analysisStatus === "Completed") completed++;
     if(reportStatus === "Reported") reported++;
@@ -362,6 +412,8 @@ window.loadData = async function(){
       <td><strong>${data.sampleCode || "-"}</strong></td>
 
       <td>
+        ${statusBadge(analysisStatus)}
+        <br><br>
         <select class="analysis-select">
           <option value="Pending" ${analysisStatus==="Pending"?"selected":""}>Pending</option>
           <option value="Completed" ${analysisStatus==="Completed"?"selected":""}>Completed</option>
@@ -375,6 +427,8 @@ window.loadData = async function(){
       </td>
 
       <td>
+        ${statusBadge(reportStatus)}
+        <br><br>
         <select class="report-select" ${analysisStatus!=="Completed"?"disabled":""}>
           <option value="Pending" ${reportStatus==="Pending"?"selected":""}>Pending</option>
           <option value="Reported" ${reportStatus==="Reported"?"selected":""}>Reported</option>
@@ -393,7 +447,12 @@ window.loadData = async function(){
     const analysisSelect = row.querySelector(".analysis-select");
     const reportSelect = row.querySelector(".report-select");
 
+    setDropdownColor(analysisSelect);
+    setDropdownColor(reportSelect);
+
     analysisSelect.addEventListener("change", async function(){
+      setDropdownColor(this);
+
       if(this.value === "Pending"){
         await updateDoc(doc(db,"samples",docId),{
           analysisStatus:"Pending",
@@ -410,6 +469,8 @@ window.loadData = async function(){
     });
 
     reportSelect.addEventListener("change", async function(){
+      setDropdownColor(this);
+
       if(this.value === "Pending"){
         await updateDoc(doc(db,"samples",docId),{
           reportStatus:"Pending",
