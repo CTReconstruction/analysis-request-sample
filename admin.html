@@ -281,9 +281,10 @@ window.loadData = async function(){
   const selectedType = filterType.value;
 
   const q = query(
-    collection(db,"samples"),
-    where("analysisType","==",selectedType),
-    orderBy("createdAt","desc")
+  collection(db,"samples"),
+  where("analysisType","==",selectedType),
+  orderBy("date","asc")
+    
   );
 
   const snap = await getDocs(q);
