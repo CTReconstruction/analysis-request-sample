@@ -115,6 +115,47 @@ select, input[type="date"]{
   color:#fff;
 }
 
+/* SUMMARY CARDS */
+.summary-cards{
+  display:flex;
+  gap:20px;
+  margin-bottom:25px;
+  flex-wrap:wrap;
+}
+
+.card{
+  flex:1;
+  min-width:180px;
+  padding:20px;
+  border-radius:16px;
+  background:rgba(255,255,255,0.2);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.3);
+  text-align:center;
+  transition:.3s;
+}
+
+.card:hover{
+  transform:translateY(-5px);
+}
+
+.card h3{
+  margin:0;
+  font-size:28px;
+  font-weight:800;
+}
+
+.card p{
+  margin:5px 0 0;
+  font-size:14px;
+  opacity:.9;
+}
+
+.card.total{ background:linear-gradient(135deg,#3b82f6,#2563eb); }
+.card.pending{ background:linear-gradient(135deg,#facc15,#eab308); color:#000; }
+.card.completed{ background:linear-gradient(135deg,#22c55e,#16a34a); }
+.card.reported{ background:linear-gradient(135deg,#a855f7,#7e22ce); }
+
 /* CONTROL BAR */
 .control-bar{
   display:flex;
@@ -185,6 +226,29 @@ tbody tr:hover{
 Logout
 </button>
 
+<!-- SUMMARY CARDS -->
+<div class="summary-cards">
+  <div class="card total">
+    <h3 id="totalCount">0</h3>
+    <p>Total Samples</p>
+  </div>
+
+  <div class="card pending">
+    <h3 id="pendingCount">0</h3>
+    <p>Pending</p>
+  </div>
+
+  <div class="card completed">
+    <h3 id="completedCount">0</h3>
+    <p>Completed</p>
+  </div>
+
+  <div class="card reported">
+    <h3 id="reportedCount">0</h3>
+    <p>Reported</p>
+  </div>
+</div>
+
 <div class="control-bar">
   <div class="left-controls">
     <select id="filterType" onchange="loadData()">
@@ -223,7 +287,6 @@ Logout
 
 </div>
 
-<!-- HANYA BAGIAN SCRIPT YANG DIUBAH -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, getDocs, query, orderBy, where, updateDoc, doc }
@@ -248,6 +311,11 @@ const tableBody = document.getElementById("tableBody");
 const filterType = document.getElementById("filterType");
 const totalData = document.getElementById("totalData");
 const searchInput = document.getElementById("searchInput");
+
+const totalCount = document.getElementById("totalCount");
+const pendingCount = document.getElementById("pendingCount");
+const completedCount = document.getElementById("completedCount");
+const reportedCount = document.getElementById("reportedCount");
 
 function formatDate(date){
   const d = new Date(date);
@@ -281,10 +349,9 @@ window.loadData = async function(){
   const selectedType = filterType.value;
 
   const q = query(
-  collection(db,"samples"),
-  where("analysisType","==",selectedType),
-  orderBy("date","asc")
-    
+    collection(db,"samples"),
+    where("analysisType","==",selectedType),
+    orderBy("date","asc")
   );
 
   const snap = await getDocs(q);
@@ -292,12 +359,23 @@ window.loadData = async function(){
   tableBody.innerHTML = "";
   totalData.innerText = `Total ${selectedType}: ${snap.size}`;
 
+  let total = 0;
+  let pending = 0;
+  let completed = 0;
+  let reported = 0;
+
   snap.forEach(docSnap => {
     const data = docSnap.data();
     const docId = docSnap.id;
 
     const analysisStatus = data.analysisStatus || "Pending";
     const reportStatus = data.reportStatus || "Pending";
+
+    total++;
+
+    if(analysisStatus === "Pending") pending++;
+    if(analysisStatus === "Completed") completed++;
+    if(reportStatus === "Reported") reported++;
 
     const analysisDate = data.analysisCompletedDate || "";
     const reportDate = data.reportReportedDate || "";
@@ -348,7 +426,6 @@ window.loadData = async function(){
     const analysisSelect = row.querySelector(".analysis-select");
     const reportSelect = row.querySelector(".report-select");
 
-    // ✅ FIX 1: sekarang langsung update saat dropdown berubah
     analysisSelect.addEventListener("change", async function(){
       if(this.value === "Pending"){
         await updateDoc(doc(db,"samples",docId),{
@@ -398,6 +475,11 @@ window.loadData = async function(){
     }
 
   });
+
+  totalCount.innerText = total;
+  pendingCount.innerText = pending;
+  completedCount.innerText = completed;
+  reportedCount.innerText = reported;
 };
 
 searchInput.addEventListener("keyup", function(){
