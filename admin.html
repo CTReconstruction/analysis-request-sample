@@ -90,13 +90,19 @@ button:hover{
   transform:translateY(-2px);
 }
 
-/* 🔥 dropdown filter */
 select{
   padding:10px;
   border-radius:8px;
   border:none;
-  margin-bottom:15px;
+  margin-bottom:10px;
   font-weight:600;
+}
+
+/* 🔥 TOTAL DATA STYLE */
+#totalData{
+  margin-bottom:15px;
+  font-weight:700;
+  font-size:15px;
 }
 
 .table-wrapper{
@@ -159,12 +165,16 @@ td strong{
 Logout
 </button>
 
-<!-- 🔥 FILTER DASHBOARD -->
 <br>
 <select id="filterType" onchange="loadData()">
   <option value="CT Scan">CT Scan</option>
   <option value="SEM EDX">SEM EDX</option>
 </select>
+
+<!-- 🔥 TOTAL DATA -->
+<div id="totalData">
+  Total CT Scan: 0
+</div>
 
 <div class="table-wrapper">
 <table>
@@ -207,6 +217,7 @@ const auth = getAuth(app);
 
 const tableBody = document.getElementById("tableBody");
 const filterType = document.getElementById("filterType");
+const totalData = document.getElementById("totalData");
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -228,6 +239,9 @@ window.loadData = async function(){
   const snap = await getDocs(q);
 
   tableBody.innerHTML = "";
+
+  /* 🔥 UPDATE TOTAL */
+  totalData.innerText = `Total ${selectedType}: ${snap.size}`;
 
   snap.forEach(doc => {
     const data = doc.data();
