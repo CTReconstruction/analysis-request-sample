@@ -17,6 +17,43 @@ body{
   overflow-x:hidden;
 }
 
+body::before{
+  content:"";
+  position:absolute;
+  width:700px;
+  height:700px;
+  background:radial-gradient(circle,rgba(255,255,255,0.25),transparent 60%);
+  top:-200px;
+  right:-200px;
+  animation:float 8s ease-in-out infinite alternate;
+}
+
+@keyframes float{
+  from{transform:translateY(0);}
+  to{transform:translateY(40px);}
+}
+
+.home-btn{
+  position:absolute;
+  top:20px;
+  left:20px;
+  background:#ffffff20;
+  backdrop-filter:blur(10px);
+  border:1px solid #ffffff40;
+  color:#fff;
+  padding:8px 14px;
+  border-radius:8px;
+  font-size:14px;
+  cursor:pointer;
+  text-decoration:none;
+  font-weight:600;
+  transition:.3s;
+}
+
+.home-btn:hover{
+  background:#ffffff35;
+}
+
 .container{
   max-width:1200px;
   margin:auto;
@@ -27,10 +64,56 @@ body{
   border-radius:22px;
   box-shadow:0 25px 50px rgba(0,0,0,.35);
   color:#fff;
+  position:relative;
+  z-index:1;
 }
 
-h2{text-align:center;margin-bottom:25px;}
+h2{
+  text-align:center;
+  margin-bottom:25px;
+}
 
+button{
+  background:#ef4444;
+  color:#fff;
+  border:none;
+  padding:10px 16px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+  transition:.3s;
+}
+
+button:hover{
+  background:#dc2626;
+  transform:translateY(-2px);
+}
+
+select, input[type="date"]{
+  padding:6px;
+  border-radius:6px;
+  border:none;
+  font-size:13px;
+  font-weight:600;
+}
+
+/* DROPDOWN COLORS */
+.dropdown-pending{
+  background:#facc15;
+  color:#000;
+}
+
+.dropdown-completed{
+  background:#22c55e;
+  color:#fff;
+}
+
+.dropdown-reported{
+  background:#a855f7;
+  color:#fff;
+}
+
+/* SUMMARY CARDS */
 .summary-cards{
   display:flex;
   gap:20px;
@@ -44,8 +127,32 @@ h2{text-align:center;margin-bottom:25px;}
   padding:20px;
   border-radius:16px;
   background:rgba(255,255,255,0.2);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.3);
   text-align:center;
+  transition:.3s;
 }
+
+.card:hover{
+  transform:translateY(-5px);
+}
+
+.card h3{
+  margin:0;
+  font-size:28px;
+  font-weight:800;
+}
+
+.card p{
+  margin:5px 0 0;
+  font-size:14px;
+  opacity:.9;
+}
+
+.card.total{ background:linear-gradient(135deg,#3b82f6,#2563eb); }
+.card.pending{ background:linear-gradient(135deg,#facc15,#eab308); color:#000; }
+.card.completed{ background:linear-gradient(135deg,#22c55e,#16a34a); }
+.card.reported{ background:linear-gradient(135deg,#a855f7,#7e22ce); }
 
 .control-bar{
   display:flex;
@@ -62,11 +169,25 @@ h2{text-align:center;margin-bottom:25px;}
   align-items:center;
 }
 
+#searchInput{
+  width:250px;
+}
+
+#totalData{
+  font-weight:700;
+}
+
+.table-wrapper{
+  overflow-x:auto;
+}
+
 table{
   width:100%;
   border-collapse:collapse;
   min-width:1000px;
   background:rgba(255,255,255,0.1);
+  border-radius:12px;
+  overflow:hidden;
 }
 
 th, td{
@@ -77,21 +198,51 @@ th, td{
 
 th{
   background:rgba(255,255,255,0.25);
+  font-weight:700;
+}
+
+tbody tr{
+  border-bottom:1px solid rgba(255,255,255,0.2);
+}
+
+tbody tr:hover{
+  background:rgba(255,255,255,0.15);
 }
 </style>
 </head>
 
 <body>
 
+<a href="index.html" class="home-btn">← Home</a>
+
 <div class="container">
 
 <h2>Admin Dashboard</h2>
 
+<button onclick="logoutAdmin()" style="margin-bottom:20px;">
+Logout
+</button>
+
 <div class="summary-cards">
-  <div class="card"><h3 id="totalCount">0</h3><p>Total</p></div>
-  <div class="card"><h3 id="pendingCount">0</h3><p>Pending</p></div>
-  <div class="card"><h3 id="completedCount">0</h3><p>Completed</p></div>
-  <div class="card"><h3 id="reportedCount">0</h3><p>Reported</p></div>
+  <div class="card total">
+    <h3 id="totalCount">0</h3>
+    <p>Total Samples</p>
+  </div>
+
+  <div class="card pending">
+    <h3 id="pendingCount">0</h3>
+    <p>Pending</p>
+  </div>
+
+  <div class="card completed">
+    <h3 id="completedCount">0</h3>
+    <p>Completed</p>
+  </div>
+
+  <div class="card reported">
+    <h3 id="reportedCount">0</h3>
+    <p>Reported</p>
+  </div>
 </div>
 
 <div class="control-bar">
@@ -101,17 +252,15 @@ th{
       <option value="SEM EDX">SEM EDX</option>
     </select>
 
-    <!-- PAGINATION BULAN -->
-    <select id="monthPagination" onchange="changeMonth()">
-      <option value="">Select Month</option>
-    </select>
-
-    <input type="text" id="searchInput" placeholder="Search...">
+    <input type="text" id="searchInput" placeholder="Search by Sample Code or Requester...">
   </div>
 
-  <div id="totalData">Total: 0</div>
+  <div id="totalData">
+    Total CT Scan: 0
+  </div>
 </div>
 
+<div class="table-wrapper">
 <table>
 <thead>
 <tr>
@@ -129,6 +278,7 @@ th{
 </thead>
 <tbody id="tableBody"></tbody>
 </table>
+</div>
 
 </div>
 
@@ -136,27 +286,31 @@ th{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, getDocs, query, orderBy, where, updateDoc, doc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signOut }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDh2gwpr4OM7tgvahKEf9Bd7hvUBuABQtU",
   authDomain: "analysis-request-sample.firebaseapp.com",
-  projectId: "analysis-request-sample"
+  projectId: "analysis-request-sample",
+  storageBucket: "analysis-request-sample.firebasestorage.app",
+  messagingSenderId: "496722658784",
+  appId: "1:496722658784:web:fda4b31684fb41029dd785"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 const tableBody = document.getElementById("tableBody");
 const filterType = document.getElementById("filterType");
 const totalData = document.getElementById("totalData");
-const monthPagination = document.getElementById("monthPagination");
+const searchInput = document.getElementById("searchInput");
 
 const totalCount = document.getElementById("totalCount");
 const pendingCount = document.getElementById("pendingCount");
 const completedCount = document.getElementById("completedCount");
 const reportedCount = document.getElementById("reportedCount");
-
-let monthlyData = {};
 
 function formatDate(date){
   const d = new Date(date);
@@ -172,8 +326,19 @@ function convertToInputDate(ddmmyyyy){
   return `${parts[2]}-${parts[1]}-${parts[0]}`;
 }
 
-window.loadData = async function(){
+function setDropdownColor(select){
+  select.classList.remove("dropdown-pending","dropdown-completed","dropdown-reported");
+  if(select.value === "Pending") select.classList.add("dropdown-pending");
+  if(select.value === "Completed") select.classList.add("dropdown-completed");
+  if(select.value === "Reported") select.classList.add("dropdown-reported");
+}
 
+onAuthStateChanged(auth, (user) => {
+  if (user) loadData();
+  else location.href = "index.html";
+});
+
+window.loadData = async function(){
   const selectedType = filterType.value;
 
   const q = query(
@@ -184,81 +349,148 @@ window.loadData = async function(){
 
   const snap = await getDocs(q);
 
-  monthlyData = {};
-  monthPagination.innerHTML = '<option value="">Select Month</option>';
-
-  snap.forEach(docSnap=>{
-    const data = docSnap.data();
-    if(!data.date) return;
-
-    const parts = data.date.split("-");
-    const monthKey = parts[1]+"-"+parts[2];
-
-    if(!monthlyData[monthKey]){
-      monthlyData[monthKey] = [];
-      const opt = document.createElement("option");
-      opt.value = monthKey;
-      opt.textContent = monthKey;
-      monthPagination.appendChild(opt);
-    }
-
-    monthlyData[monthKey].push({id:docSnap.id, ...data});
-  });
-
-  const firstMonth = Object.keys(monthlyData)[0];
-  if(firstMonth){
-    monthPagination.value = firstMonth;
-    renderMonth(firstMonth);
-  }
-};
-
-function renderMonth(monthKey){
-
   tableBody.innerHTML = "";
+  totalData.innerText = `Total ${selectedType}: ${snap.size}`;
 
-  const dataList = monthlyData[monthKey] || [];
+  let total = 0;
+  let pending = 0;
+  let completed = 0;
+  let reported = 0;
 
-  let total=0,pending=0,completed=0,reported=0;
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
+    const docId = docSnap.id;
 
-  dataList.forEach(item=>{
+    const analysisStatus = data.analysisStatus || "Pending";
+    const reportStatus = data.reportStatus || "Pending";
 
     total++;
-    if(item.analysisStatus==="Pending") pending++;
-    if(item.analysisStatus==="Completed") completed++;
-    if(item.reportStatus==="Reported") reported++;
+    if(analysisStatus === "Pending") pending++;
+    if(analysisStatus === "Completed") completed++;
+    if(reportStatus === "Reported") reported++;
+
+    const analysisDate = data.analysisCompletedDate || "";
+    const reportDate = data.reportReportedDate || "";
 
     const row = document.createElement("tr");
 
     row.innerHTML = `
-      <td>${item.date||"-"}</td>
-      <td>${item.analysisType||"-"}</td>
-      <td>${item.requester||"-"}</td>
-      <td>${item.noSample||"-"}</td>
-      <td>${item.sampleName||"-"}</td>
-      <td><strong>${item.sampleCode||"-"}</strong></td>
-      <td>${item.analysisStatus||"Pending"}</td>
-      <td>${item.analysisCompletedDate||"-"}</td>
-      <td>${item.reportStatus||"Pending"}</td>
-      <td>${item.reportReportedDate||"-"}</td>
+      <td>${data.date || "-"}</td>
+      <td>${data.analysisType || "-"}</td>
+      <td>${data.requester || "-"}</td>
+      <td>${data.noSample || "-"}</td>
+      <td>${data.sampleName || "-"}</td>
+      <td><strong>${data.sampleCode || "-"}</strong></td>
+
+      <td>
+        <select class="analysis-select">
+          <option value="Pending" ${analysisStatus==="Pending"?"selected":""}>Pending</option>
+          <option value="Completed" ${analysisStatus==="Completed"?"selected":""}>Completed</option>
+        </select>
+      </td>
+
+      <td>
+        ${analysisStatus==="Completed"
+          ? `<input type="date" class="analysis-date" value="${convertToInputDate(analysisDate)}">`
+          : `-`}
+      </td>
+
+      <td>
+        <select class="report-select" ${analysisStatus!=="Completed"?"disabled":""}>
+          <option value="Pending" ${reportStatus==="Pending"?"selected":""}>Pending</option>
+          <option value="Reported" ${reportStatus==="Reported"?"selected":""}>Reported</option>
+        </select>
+      </td>
+
+      <td>
+        ${reportStatus==="Reported"
+          ? `<input type="date" class="report-date" value="${convertToInputDate(reportDate)}">`
+          : `-`}
+      </td>
     `;
 
     tableBody.appendChild(row);
+
+    const analysisSelect = row.querySelector(".analysis-select");
+    const reportSelect = row.querySelector(".report-select");
+
+    setDropdownColor(analysisSelect);
+    setDropdownColor(reportSelect);
+
+    analysisSelect.addEventListener("change", async function(){
+      setDropdownColor(this);
+
+      if(this.value === "Pending"){
+        await updateDoc(doc(db,"samples",docId),{
+          analysisStatus:"Pending",
+          analysisCompletedDate:null,
+          reportStatus:"Pending",
+          reportReportedDate:null
+        });
+      } else {
+        await updateDoc(doc(db,"samples",docId),{
+          analysisStatus:"Completed"
+        });
+      }
+      loadData();
+    });
+
+    reportSelect.addEventListener("change", async function(){
+      setDropdownColor(this);
+
+      if(this.value === "Pending"){
+        await updateDoc(doc(db,"samples",docId),{
+          reportStatus:"Pending",
+          reportReportedDate:null
+        });
+      } else {
+        await updateDoc(doc(db,"samples",docId),{
+          reportStatus:"Reported"
+        });
+      }
+      loadData();
+    });
+
+    const analysisDateInput = row.querySelector(".analysis-date");
+    if(analysisDateInput){
+      analysisDateInput.addEventListener("change", async function(){
+        await updateDoc(doc(db,"samples",docId),{
+          analysisCompletedDate: formatDate(this.value)
+        });
+      });
+    }
+
+    const reportDateInput = row.querySelector(".report-date");
+    if(reportDateInput){
+      reportDateInput.addEventListener("change", async function(){
+        await updateDoc(doc(db,"samples",docId),{
+          reportReportedDate: formatDate(this.value)
+        });
+      });
+    }
+
   });
 
   totalCount.innerText = total;
   pendingCount.innerText = pending;
   completedCount.innerText = completed;
   reportedCount.innerText = reported;
-
-  totalData.innerText = `Total ${filterType.value}: ${total}`;
-}
-
-window.changeMonth = function(){
-  const selected = monthPagination.value;
-  if(selected) renderMonth(selected);
 };
 
-loadData();
+searchInput.addEventListener("keyup", function(){
+  const keyword = this.value.toLowerCase();
+  const rows = tableBody.getElementsByTagName("tr");
+
+  for(let i=0; i<rows.length; i++){
+    const rowText = rows[i].innerText.toLowerCase();
+    rows[i].style.display = rowText.includes(keyword) ? "" : "none";
+  }
+});
+
+window.logoutAdmin = async function(){
+  await signOut(auth);
+  location.href = "index.html";
+}
 </script>
 
 </body>
