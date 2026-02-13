@@ -268,8 +268,9 @@ Logout
 <th>Analysis</th>
 <th>Requester</th>
 <th>No Sample</th>
-<th>Sample Name</th>
 <th>Sample Code</th>
+<th>Background</th>
+<th>Purpose</th>
 <th>Analysis Status</th>
 <th>Completed Date</th>
 <th>Report Status</th>
@@ -381,6 +382,8 @@ window.loadData = async function(){
       <td>${data.noSample || "-"}</td>
       <td>${data.sampleName || "-"}</td>
       <td><strong>${data.sampleCode || "-"}</strong></td>
+      <td>${data.backgroundSample || "-"}</td>
+      <td>${data.purposeAnalysis || "-"}</td>
 
       <td>
         <select class="analysis-select">
