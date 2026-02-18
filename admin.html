@@ -461,14 +461,14 @@ window.loadData = async function(){
           ? `<input type="date" class="report-date" value="${convertToInputDate(reportDate)}">`
           : `-`}
       </td>
-    `;
+   
     <td>
   <button onclick="deleteSample('${docId}')" 
     style="background:#b91c1c;">
     Remove
   </button>
   </td>
-
+   `;
     tableBody.appendChild(row);
 
     const analysisSelect = row.querySelector(".analysis-select");
