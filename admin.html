@@ -208,6 +208,30 @@ tbody tr{
 tbody tr:hover{
   background:rgba(255,255,255,0.15);
 }
+
+.modal{
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.6);
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+.modal-content{
+  background:#fff;
+  color:#000;
+  width:500px;
+  max-height:80vh;
+  overflow:auto;
+  padding:25px;
+  border-radius:16px;
+}
+
 </style>
 </head>
 
@@ -270,6 +294,7 @@ Logout
 <th>No Sample</th>
 <th>Sample Name</th>
 <th>Sample Code</th>
+<th>Detail</th>
 <th>Analysis Status</th>
 <th>Completed Date</th>
 <th>Report Status</th>
@@ -381,6 +406,11 @@ window.loadData = async function(){
       <td>${data.noSample || "-"}</td>
       <td>${data.sampleName || "-"}</td>
       <td><strong>${data.sampleCode || "-"}</strong></td>
+      <td> <button onclick="openDetail(
+           '${(data.backgroundSample || "").replace(/'/g,"\\'")}',
+          '${(data.purposeAnalysis || "").replace(/'/g,"\\'")}'
+      )">View</button>
+      </td>
 
       <td>
         <select class="analysis-select">
@@ -487,11 +517,36 @@ searchInput.addEventListener("keyup", function(){
   }
 });
 
+window.openDetail = function(background, purpose){
+  document.getElementById("modalBackground").innerText = background || "-";
+  document.getElementById("modalPurpose").innerText = purpose || "-";
+  document.getElementById("detailModal").style.display = "flex";
+}
+
+window.closeDetail = function(){
+  document.getElementById("detailModal").style.display = "none";
+}
+
+
 window.logoutAdmin = async function(){
   await signOut(auth);
   location.href = "index.html";
 }
 </script>
+  
+<div class="modal" id="detailModal">
+  <div class="modal-content">
+    <h3>Sample Detail</h3>
+
+    <p><strong>Background:</strong></p>
+    <p id="modalBackground"></p>
+
+    <p><strong>Purpose:</strong></p>
+    <p id="modalPurpose"></p>
+
+    <button onclick="closeDetail()">Close</button>
+  </div>
+</div>
 
 </body>
 </html>
