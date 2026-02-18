@@ -471,7 +471,7 @@ window.loadData = async function(){
       loadData();
     });
 
-    window.exportToExcel = async function(){
+ window.exportToExcel = async function(){
 
   const selectedType = filterType.value;
 
@@ -488,23 +488,67 @@ window.loadData = async function(){
   snap.forEach(docSnap => {
     const data = docSnap.data();
 
-    dataExport.push({
-      "Date": data.date || "-",
-      "Analysis Type": data.analysisType || "-",
-      "Requester": data.requester || "-",
-      "No Sample": data.noSample || "-",
-      "Sample Name": data.sampleName || "-",
-      "Sample Code": data.sampleCode || "-",
-      "Background": data.backgroundSample || "-",
-      "Purpose": data.purposeAnalysis || "-",
-      "Analysis Status": data.analysisStatus || "Pending",
-      "Analysis Completed Date": data.analysisCompletedDate || "-",
-      "Report Status": data.reportStatus || "Pending",
-      "Report Date": data.reportReportedDate || "-"
-    });
+    dataExport.push([
+      data.date || "-",
+      data.analysisType || "-",
+      data.requester || "-",
+      data.noSample || "-",
+      data.sampleName || "-",
+      data.sampleCode || "-",
+      data.backgroundSample || "-",
+      data.purposeAnalysis || "-",
+      data.analysisStatus || "Pending",
+      data.analysisCompletedDate || "-",
+      data.reportStatus || "Pending",
+      data.reportReportedDate || "-"
+    ]);
   });
 
-  const worksheet = XLSX.utils.json_to_sheet(dataExport);
+  const header = [
+    "Date",
+    "Analysis Type",
+    "Requester",
+    "No Sample",
+    "Sample Name",
+    "Sample Code",
+    "Background",
+    "Purpose",
+    "Analysis Status",
+    "Completed Date",
+    "Report Status",
+    "Report Date"
+  ];
+
+  // Tambahkan judul + info atas
+  const title = [
+    [`ADMIN DASHBOARD REPORT - ${selectedType}`],
+    [`Exported At : ${new Date().toLocaleString()}`],
+    [],
+    header
+  ];
+
+  const finalData = [...title, ...dataExport];
+
+  const worksheet = XLSX.utils.aoa_to_sheet(finalData);
+
+  // Auto column width
+  const colWidths = header.map((h, i) => ({
+    wch: Math.max(
+      h.length,
+      ...dataExport.map(row => String(row[i] || "").length)
+    ) + 3
+  }));
+
+  worksheet["!cols"] = colWidths;
+
+  // Freeze header row
+  worksheet["!freeze"] = { xSplit: 0, ySplit: 4 };
+
+  // Auto filter
+  worksheet["!autofilter"] = {
+    ref: `A4:L${finalData.length}`
+  };
+
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Dashboard");
 
