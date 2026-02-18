@@ -464,9 +464,15 @@ window.loadData = async function(){
    
     <td>
   <button onclick="deleteSample('${docId}')" 
-    style="background:#b91c1c;">
-    Remove
-  </button>
+  style="
+    background:#b91c1c;
+    font-size:12px;
+    padding:3px 6px;
+    border-radius:4px;
+  ">
+  🗑
+</button>
+
   </td>
    `;
     tableBody.appendChild(row);
