@@ -248,6 +248,11 @@ tbody tr:hover{
 Logout
 </button>
 
+<button onclick="exportToExcel()" style="margin-bottom:20px;">
+Export to Excel
+</button>
+
+
 <div class="summary-cards">
   <div class="card total">
     <h3 id="totalCount">0</h3>
@@ -466,6 +471,47 @@ window.loadData = async function(){
       loadData();
     });
 
+    window.exportToExcel = async function(){
+
+  const selectedType = filterType.value;
+
+  const q = query(
+    collection(db,"samples"),
+    where("analysisType","==",selectedType),
+    orderBy("date","asc")
+  );
+
+  const snap = await getDocs(q);
+
+  let dataExport = [];
+
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
+
+    dataExport.push({
+      "Date": data.date || "-",
+      "Analysis Type": data.analysisType || "-",
+      "Requester": data.requester || "-",
+      "No Sample": data.noSample || "-",
+      "Sample Name": data.sampleName || "-",
+      "Sample Code": data.sampleCode || "-",
+      "Background": data.backgroundSample || "-",
+      "Purpose": data.purposeAnalysis || "-",
+      "Analysis Status": data.analysisStatus || "Pending",
+      "Analysis Completed Date": data.analysisCompletedDate || "-",
+      "Report Status": data.reportStatus || "Pending",
+      "Report Date": data.reportReportedDate || "-"
+    });
+  });
+
+  const worksheet = XLSX.utils.json_to_sheet(dataExport);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Dashboard");
+
+  XLSX.writeFile(workbook, `Dashboard_${selectedType}.xlsx`);
+};
+
+
     reportSelect.addEventListener("change", async function(){
       setDropdownColor(this);
 
@@ -548,6 +594,8 @@ window.logoutAdmin = async function(){
     <button onclick="closeDetail()">Close</button>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 </body>
 </html>
